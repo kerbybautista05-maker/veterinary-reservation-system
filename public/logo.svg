@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 520" width="520" height="520" role="img">
+  <title>MN2 Co-Working Hub</title>
+  <desc>MN2 letters on a navy rounded square with a yellow lightbulb</desc>
+
+  <!-- Navy rounded square -->
+  <rect x="60" y="100" width="300" height="300" rx="42" fill="#0d2d5e"/>
+
+  <!-- M — left stem -->
+  <rect x="80" y="126" width="34" height="160" rx="6" fill="#ffffff"/>
+  <!-- M — right stem -->
+  <rect x="222" y="126" width="34" height="160" rx="6" fill="#ffffff"/>
+  <!-- M — left diagonal -->
+  <polygon points="80,126 114,126 170,236 136,236" fill="#ffffff"/>
+  <!-- M — right diagonal -->
+  <polygon points="222,126 256,126 200,236 166,236" fill="#ffffff"/>
+
+  <!-- N — left stem -->
+  <rect x="80" y="274" width="30" height="110" rx="5" fill="#ffffff"/>
+  <!-- N — diagonal -->
+  <polygon points="80,274 110,274 182,384 152,384" fill="#ffffff"/>
+  <!-- N — right stem -->
+  <rect x="152" y="274" width="30" height="110" rx="5" fill="#ffffff"/>
+
+  <!-- 2 — top bar -->
+  <rect x="240" y="126" width="68" height="28" rx="8" fill="#ffffff"/>
+  <!-- 2 — right stem top -->
+  <rect x="280" y="126" width="28" height="50" rx="6" fill="#ffffff"/>
+  <!-- 2 — diagonal body -->
+  <polygon points="308,154 308,176 240,278 240,256" fill="#ffffff"/>
+  <!-- 2 — baseline bar -->
+  <rect x="240" y="278" width="68" height="28" rx="8" fill="#ffffff"/>
+
+  <!-- Gold underline inside square -->
+  <rect x="80" y="386" width="248" height="10" rx="5" fill="#EEC643"/>
+
+  <!-- Lightbulb group, centred at 380,370 -->
+  <g transform="translate(380,370)">
+    <!-- Rays -->
+    <line x1="0"   y1="-74" x2="0"   y2="-60" stroke="#1a4a8a" stroke-width="5" stroke-linecap="round"/>
+    <line x1="52"  y1="-52" x2="42"  y2="-42" stroke="#1a4a8a" stroke-width="5" stroke-linecap="round"/>
+    <line x1="70"  y1="0"   x2="56"  y2="0"   stroke="#1a4a8a" stroke-width="5" stroke-linecap="round"/>
+    <line x1="-52" y1="-52" x2="-42" y2="-42" stroke="#1a4a8a" stroke-width="5" stroke-linecap="round"/>
+    <line x1="-70" y1="0"   x2="-56" y2="0"   stroke="#1a4a8a" stroke-width="5" stroke-linecap="round"/>
+    <!-- Bulb -->
+    <circle cx="0" cy="0" r="46" fill="#EEC643"/>
+    <!-- Highlight -->
+    <ellipse cx="-12" cy="-16" rx="10" ry="16" fill="rgba(255,255,220,0.55)" transform="rotate(-20,-12,-16)"/>
+    <!-- Filament -->
+    <line x1="-8" y1="18" x2="-8" y2="38" stroke="#0d2d5e" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1=" 8" y1="18" x2=" 8" y2="38" stroke="#0d2d5e" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M-8,18 Q-8,8 0,4 Q8,8 8,18" fill="none" stroke="#0d2d5e" stroke-width="3.5" stroke-linecap="round"/>
+    <!-- Base -->
+    <rect x="-22" y="40" width="44" height="12" rx="3" fill="#0d2d5e"/>
+    <rect x="-22" y="54" width="44" height="12" rx="3" fill="#1a5296"/>
+    <rect x="-22" y="68" width="44" height="10" rx="3" fill="#0d2d5e"/>
+  </g>
+</svg>

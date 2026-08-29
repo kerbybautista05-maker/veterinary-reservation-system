@@ -1,0 +1,162 @@
+[
+  {
+    "signName": "A",
+    "difficulty": "easy",
+    "feedback_success": "✓ Perfect 'A' sign! Thumb on the side, fingers curled.",
+    "common_mistakes": ["Thumb sticking out", "Fingers not fully curled", "Thumb on top instead of side"],
+    "checks": [
+      {
+        "type": "isFingerCurled",
+        "finger": "index",
+        "weight": 13,
+        "feedback_fail": "Curl index finger tightly into palm"
+      },
+      {
+        "type": "isFingerCurled",
+        "finger": "middle",
+        "weight": 13,
+        "feedback_fail": "Curl middle finger tightly into palm"
+      },
+      {
+        "type": "isFingerCurled",
+        "finger": "ring",
+        "weight": 13,
+        "feedback_fail": "Curl ring finger into palm"
+      },
+      {
+        "type": "isFingerCurled",
+        "finger": "pinky",
+        "weight": 13,
+        "feedback_fail": "Curl pinky finger into palm"
+      },
+      {
+        "type": "allCurledExceptThumb",
+        "weight": 30,
+        "feedback_fail": "Curl all fingers into a fist"
+      },
+      {
+        "type": "isThumbTucked",
+        "max_distance": 0.35,
+        "weight": 18,
+        "feedback_fail": "Place thumb against the SIDE of your fist"
+      }
+    ]
+  },
+  {
+    "signName": "B",
+    "difficulty": "easy",
+    "feedback_success": "✓ Excellent 'B' sign! All fingers extended and together, thumb across palm.",
+    "common_mistakes": ["Fingers spread apart", "Thumb not tucked", "Palm not flat"],
+    "checks": [
+      {
+        "type": "isFingerExtended",
+        "finger": "index",
+        "threshold_distance": 70,
+        "weight": 10,
+        "feedback_fail": "Extend index finger straight"
+      },
+      {
+        "type": "isFingerExtended",
+        "finger": "middle",
+        "threshold_distance": 70,
+        "weight": 10,
+        "feedback_fail": "Extend middle finger straight"
+      },
+      {
+        "type": "isFingerExtended",
+        "finger": "ring",
+        "threshold_distance": 70,
+        "weight": 10,
+        "feedback_fail": "Extend ring finger straight"
+      },
+      {
+        "type": "pinkyExtendedX",
+        "threshold_distance": 70,
+        "weight": 10,
+        "feedback_fail": "Extend pinky finger straight"
+      },
+      {
+        "type": "fingerTogether",
+        "fingers": ["index", "middle"],
+        "max_distance": 0.12,
+        "weight": 12,
+        "feedback_fail": "Keep index and middle fingers together"
+      },
+      {
+        "type": "fingerTogether",
+        "fingers": ["middle", "ring"],
+        "max_distance": 0.12,
+        "weight": 12,
+        "feedback_fail": "Keep middle and ring fingers together"
+      },
+      {
+        "type": "fingerTogether",
+        "fingers": ["ring", "pinky"],
+        "max_distance": 0.12,
+        "weight": 11,
+        "feedback_fail": "Keep ring and pinky fingers together"
+      },
+      {
+        "type": "thumbAcrossPalm",
+        "weight": 20,
+        "feedback_fail": "Fold thumb flat across your palm"
+      },
+      {
+        "type": "isFingerCurled",
+        "finger": "thumb",
+        "weight": 5,
+        "feedback_fail": "Bend your thumb across the palm"
+      }
+    ]
+  },
+  {
+    "signName": "C",
+    "difficulty": "medium",
+    "feedback_success": "✓ Great 'C' shape! Hand curved like the letter C.",
+    "common_mistakes": ["Fingers too straight", "Gap too small", "Thumb not curved enough"],
+    "checks": [
+      {
+        "type": "distanceSpread",
+        "tip1": "thumbTip",
+        "tip2": "indexTip",
+        "min_distance": 0.3,
+        "max_distance": 0.7,
+        "weight": 30,
+        "feedback_fail": "Keep moderate gap between thumb and index finger"
+      },
+      {
+        "type": "distanceSpread",
+        "tip1": "thumbTip",
+        "tip2": "pinkyTip",
+        "min_distance": 0.4,
+        "max_distance": 0.9,
+        "weight": 25,
+        "feedback_fail": "Spread hand to form a curved 'C' shape"
+      },
+      {
+        "type": "distanceSpread",
+        "tip1": "indexTip",
+        "tip2": "pinkyTip",
+        "min_distance": 0.25,
+        "max_distance": 0.65,
+        "weight": 20,
+        "feedback_fail": "Keep fingers curved, not flat"
+      },
+      {
+        "type": "distanceSpread",
+        "tip1": "thumbTip",
+        "tip2": "middleTip",
+        "min_distance": 0.3,
+        "max_distance": 0.75,
+        "weight": 15,
+        "feedback_fail": "Maintain C curve throughout hand"
+      },
+      {
+        "type": "palmFacing",
+        "direction": "forward",
+        "weight": 10,
+        "feedback_fail": "Face palm outward to show 'C' shape"
+      }
+    ]
+  }
+]

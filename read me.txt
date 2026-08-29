@@ -1,0 +1,30 @@
+Administrator
+Email: admin@petcareclinic.test
+Password: Admin@1234
+
+Veterinarian
+Email: vet@petcareclinic.test
+Password: Admin@1234
+
+Pet Owner
+Email: owner@petcareclinic.test
+Password: Admin@1234
+
+
+
+ How to make your system avoid bulnirability  na implement to ngayon
+
+Palitan ang bootstrap/app.php — ✅ tapos na, kopyahin mo lang
+Gawin ang app/Support/ResolvesDashboardRoute.php (bagong folder)
+Gawin ang app/Http/Middleware/EnsureUserHasRole.php
+Palitan ang app/Http/Middleware/RedirectIfAuthenticated.php
+Palitan ang app/Http/Controllers/Auth/AuthenticatedSessionController.php
+Palitan ang routes/web.php
+I-verify na tama ang values ng role column sa users table (admin, team_leader, teacher, staff)
+
+e-brighterly.com
+1daytask
+
+
+
+

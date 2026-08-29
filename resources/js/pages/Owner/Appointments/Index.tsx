@@ -1,0 +1,86 @@
+// resources/js/pages/Owner/Appointments/Index.tsx
+import { Head, Link } from '@inertiajs/react';
+import { useEffect, useState, useCallback } from 'react';
+import { CalendarClock, Plus, Filter } from 'lucide-react';
+import AppLayout from '@/layouts/app-layout';
+import { appointmentService } from '@/services';
+import type { Appointment, AppointmentStatus } from '@/services';
+import { PageHeader, StatusPill, PetAvatar, EmptyState, Pagination, C } from '@/pages/Owner/_shared/OwnerUI';
+import { formatPHDateTime } from '@/pages/Shared/helpers';
+
+const FILTERS: { value: AppointmentStatus | ''; label: string }[] = [
+    { value: '', label: 'All' }, { value: 'pending', label: 'Pending' },
+    { value: 'confirmed', label: 'Confirmed' }, { value: 'completed', label: 'Completed' }, { value: 'cancelled', label: 'Cancelled' },
+];
+
+export default function OwnerAppointmentsIndex() {
+    const [appts, setAppts] = useState<Appointment[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [status, setStatus] = useState<AppointmentStatus | ''>('');
+    const [page, setPage] = useState(1);
+    const [pagination, setPagination] = useState<any>(undefined);
+
+    const fetchData = useCallback(async () => {
+        setLoading(true);
+        const res = await appointmentService.getAppointments({ page, per_page: 15, status: status || undefined });
+        if (res.success) { setAppts(res.data ?? []); setPagination(res.pagination); }
+        setLoading(false);
+    }, [page, status]);
+
+    useEffect(() => { fetchData(); }, [fetchData]);
+
+    return (
+        <AppLayout>
+            <Head title="My Appointments" />
+            <div className="min-h-screen" style={{ background: C.bg }}>
+                <PageHeader icon={CalendarClock} title="My Appointments"
+                    action={
+                        <Link href="/owner/appointments/create" className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white text-sky-700 hover:bg-white/90 text-xs font-bold transition-all shadow-sm">
+                            <Plus className="w-3.5 h-3.5" /> Book Appointment
+                        </Link>
+                    }
+                    onRefresh={fetchData}
+                />
+
+                <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 space-y-4">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <Filter className="w-4 h-4 text-gray-400" />
+                        {FILTERS.map(f => (
+                            <button key={f.value} onClick={() => { setStatus(f.value); setPage(1); }}
+                                className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${
+                                    status === f.value ? 'bg-sky-600 text-white border-sky-600' : 'bg-white text-gray-500 border-gray-200 hover:border-sky-300'
+                                }`}>
+                                {f.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                        {loading ? (
+                            <div className="p-10 text-center text-sm text-gray-400">Loading…</div>
+                        ) : appts.length === 0 ? (
+                            <EmptyState icon={CalendarClock} title="No appointments" message="Book a visit for your pet whenever you're ready." />
+                        ) : (
+                            <div className="divide-y divide-gray-50">
+                                {appts.map(a => (
+                                    <Link key={a.id} href={`/owner/appointments/${a.id}`} className="flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50 transition-colors">
+                                        <PetAvatar photoUrl={a.pet?.photo_url} />
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-sm font-bold text-gray-800 truncate">
+                                                {a.pet?.name}
+                                                {a.is_emergency && <span className="ml-2 text-[10px] font-black text-red-600 bg-red-50 px-1.5 py-0.5 rounded-full">EMERGENCY</span>}
+                                            </p>
+                                            <p className="text-xs text-gray-400">{formatPHDateTime(`${a.appointment_date}T${a.appointment_time}`)}</p>
+                                        </div>
+                                        <StatusPill label={a.status_label ?? a.status} color={a.status_color} />
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
+                        <Pagination pagination={pagination} onPageChange={setPage} />
+                    </div>
+                </div>
+            </div>
+        </AppLayout>
+    );
+}
