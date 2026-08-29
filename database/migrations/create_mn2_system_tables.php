@@ -289,6 +289,8 @@ return new class extends Migration {
             $table->string('image_path')->nullable();
             $table->boolean('is_published')->default(true);
             $table->timestamp('published_at')->nullable();
+            $table->date('start_date')->nullable();
+            $table->date('end_date')->nullable();
 
             $table->timestamps();
             $table->softDeletes();
