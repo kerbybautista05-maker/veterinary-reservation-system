@@ -332,7 +332,15 @@ class UserController extends Controller
                 Notification::CHANNEL_APP // dedicated richer email sent separately below — avoid double-emailing
             );
 
-            $this->sendAccountStatusEmail($targetUser, true);
+            try {
+    $this->sendAccountStatusEmail($targetUser, true);
+} catch (\Throwable $e) {
+    Log::error('Account approval email failed', [
+        'user_id' => $targetUser->id,
+        'email' => $targetUser->email,
+        'error' => $e->getMessage(),
+    ]);
+}
 
             return response()->json([
                 'success' => true,
@@ -380,7 +388,15 @@ class UserController extends Controller
                 Notification::CHANNEL_APP // dedicated richer email sent separately below — avoid double-emailing
             );
 
-            $this->sendAccountStatusEmail($targetUser, false, $request->input('reason'));
+            try {
+    $this->sendAccountStatusEmail($targetUser, false, $request->input('reason'));
+} catch (\Throwable $e) {
+    Log::error('Account rejection email failed', [
+        'user_id' => $targetUser->id,
+        'email' => $targetUser->email,
+        'error' => $e->getMessage(),
+    ]);
+}
 
             return response()->json([
                 'success' => true,
