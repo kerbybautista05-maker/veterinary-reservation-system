@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Http; 
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -555,14 +556,14 @@ HTML;
     }
 
     private function sendAccountStatusEmail(User $user, bool $approved, ?string $reason = null): void
-    {
-        if (!$user->email) return;
+{
+    if (!$user->email) return;
 
-        $name  = $user->full_name;
-        $login = url('/login');
+    $name  = $user->full_name;
+    $login = url('/login');
 
-        if ($approved) {
-            $body = <<<HTML
+    if ($approved) {
+        $body = <<<HTML
 <p class="greeting">Hello, {$name}!</p>
 <p class="lead">
   Good news — your <strong>Pet Care Clinic</strong> account has been
@@ -576,11 +577,11 @@ HTML;
   <a href="{$login}" class="cta-btn">Log In Now &rarr;</a>
 </div>
 HTML;
-            $subject   = 'Account Approved — Pet Care Clinic';
-            $preheader = 'Your account has been approved. You can now log in.';
-        } else {
-            $reasonHtml = $reason ? "<p class=\"lead\">Reason: {$reason}</p>" : '';
-            $body = <<<HTML
+        $subject   = 'Account Approved — Pet Care Clinic';
+        $preheader = 'Your account has been approved. You can now log in.';
+    } else {
+        $reasonHtml = $reason ? "<p class=\"lead\">Reason: {$reason}</p>" : '';
+        $body = <<<HTML
 <p class="greeting">Hello, {$name},</p>
 <p class="lead">
   We're sorry to let you know your <strong>Pet Care Clinic</strong> account application
@@ -591,12 +592,36 @@ HTML;
 </div>
 {$reasonHtml}
 HTML;
-            $subject   = 'Account Application Declined — Pet Care Clinic';
-            $preheader = 'Your account application was declined.';
-        }
-
-        $html = $this->buildAccountEmailHtml($approved ? 'Account Approved' : 'Application Declined', $body, $preheader);
-
-        Mail::html($html, fn ($m) => $m->to($user->email, $name)->subject($subject));
+        $subject   = 'Account Application Declined — Pet Care Clinic';
+        $preheader = 'Your account application was declined.';
     }
+
+    $html = $this->buildAccountEmailHtml($approved ? 'Account Approved' : 'Application Declined', $body, $preheader);
+
+    // ---- Send via Brevo HTTP API (avoids SMTP port block on Render free tier) ----
+    $response = Http::withHeaders([
+        'api-key'      => env('BREVO_API_KEY'),
+        'Content-Type' => 'application/json',
+        'Accept'       => 'application/json',
+    ])->post('https://api.brevo.com/v3/smtp/email', [
+        'sender' => [
+            'name'  => env('BREVO_SENDER_NAME', 'Pet Care Clinic'),
+            'email' => env('BREVO_SENDER_EMAIL'),
+        ],
+        'to' => [
+            ['email' => $user->email, 'name' => $name],
+        ],
+        'subject'     => $subject,
+        'htmlContent' => $html,
+    ]);
+
+    if (!$response->successful()) {
+        Log::error('Brevo email send failed', [
+            'user_id' => $user->id,
+            'email'   => $user->email,
+            'status'  => $response->status(),
+            'body'    => $response->body(),
+        ]);
+    }
+}
 }
