@@ -569,12 +569,15 @@ function AppHeader() {
                                             }`}
                                         >
                                             <group.icon className="w-[14px] h-[14px] xl:w-[15px] xl:h-[15px]" />
-                                            <span className="hidden xl:inline">{group.label}</span>
-                                            <ChevronDown className={`w-3 h-3 transition-transform ${openGroup === group.label ? 'rotate-180' : ''}`} />
-                                            {group.badge === 'pending_approvals' && pendingApprovals > 0 && (
-                                                <UnreadBadge count={pendingApprovals} className="ml-0.5" />
-                                            )}
-                                        </button>
+<span className="hidden xl:inline">{group.label}</span>
+<ChevronDown className={`w-3 h-3 transition-transform ${openGroup === group.label ? 'rotate-180' : ''}`} />
+{group.badge === 'pending_approvals' && pendingApprovals > 0 && (
+    <UnreadBadge count={pendingApprovals} className="ml-0.5" />
+)}
+{group.items.some(item => item.isChatItem) && chatUnread > 0 && (
+    <UnreadBadge count={chatUnread} className="ml-0.5" />
+)}
+</button>
 
                                         {openGroup === group.label && (
                                             <div className="absolute left-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-40" style={{ animation: 'dropIn 0.15s ease-out' }}>
