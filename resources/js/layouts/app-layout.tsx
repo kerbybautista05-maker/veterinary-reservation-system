@@ -27,6 +27,10 @@ interface AppLayoutProps {
 
 const ROSE = '#e11d48';
 
+function isImageFile(filename: string): boolean {
+    return /\.(jpe?g|png|gif|webp|bmp)$/i.test(filename);
+}
+
 // ─── Main Layout ──────────────────────────────────────────────────────────────
 //
 // This is a deliberately smaller layout than the one it replaces. Dropped
@@ -182,12 +186,18 @@ export default function AppLayout({ children }: AppLayoutProps) {
                                     <div className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-sm ${isMine ? 'text-white' : 'bg-gray-100 text-gray-800'}`}
                                         style={isMine ? { background: ROSE } : undefined}>
                                         {m.message}
-                                        {m.attachment_url && (
-                                            <a href={m.attachment_url} target="_blank" rel="noreferrer"
-                                                className={`block text-xs underline mt-1 ${isMine ? 'text-white/90' : 'text-gray-600'}`}>
-                                                {m.attachment_name ?? 'Attachment'}
-                                            </a>
-                                        )}
+{m.attachment_url && isImageFile(m.attachment_name ?? m.attachment_url) && (
+    <a href={m.attachment_url} target="_blank" rel="noreferrer" className="block mt-1">
+        <img src={m.attachment_url} alt={m.attachment_name ?? 'Attachment'}
+            className="max-w-[180px] max-h-[180px] rounded-lg border border-black/10 object-cover" />
+    </a>
+)}
+{m.attachment_url && !isImageFile(m.attachment_name ?? m.attachment_url) && (
+    <a href={m.attachment_url} target="_blank" rel="noreferrer"
+        className={`block text-xs underline mt-1 ${isMine ? 'text-white/90' : 'text-gray-600'}`}>
+        {m.attachment_name ?? 'Attachment'}
+    </a>
+)}
                                     </div>
                                 </div>
                             );

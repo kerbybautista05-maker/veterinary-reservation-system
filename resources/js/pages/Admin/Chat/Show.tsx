@@ -8,6 +8,10 @@ import type { ChatConversation, ChatMessage } from '../../../services';
 import { PageHeader, Avatar, BackLink, StatusPill, toastError, C } from '../_shared/AdminUI';
 import { formatPHTime, formatPHDate } from '../../Shared/helpers';
 
+function isImageFile(filename: string): boolean {
+    return /\.(jpe?g|png|gif|webp|bmp)$/i.test(filename);
+}
+
 export default function AdminChatShow({ conversationId }: { conversationId: number | string }) {
     const [conversation, setConversation] = useState<ChatConversation | null>(null);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -98,11 +102,17 @@ export default function AdminChatShow({ conversationId }: { conversationId: numb
                                         <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${isOwner ? 'bg-gray-100 text-gray-800' : 'text-white'}`}
                                             style={!isOwner ? { background: C.rose } : undefined}>
                                             {m.message && <p className="text-sm">{m.message}</p>}
-                                            {m.attachment_url && (
-                                                <a href={m.attachment_url} target="_blank" rel="noreferrer" className={`text-xs underline block mt-1 ${isOwner ? 'text-gray-600' : 'text-white/90'}`}>
-                                                    {m.attachment_name ?? 'Attachment'}
-                                                </a>
-                                            )}
+{m.attachment_url && isImageFile(m.attachment_name ?? m.attachment_url) && (
+    <a href={m.attachment_url} target="_blank" rel="noreferrer" className="block mt-1">
+        <img src={m.attachment_url} alt={m.attachment_name ?? 'Attachment'}
+            className="max-w-[220px] max-h-[220px] rounded-lg border border-black/10 object-cover" />
+    </a>
+)}
+{m.attachment_url && !isImageFile(m.attachment_name ?? m.attachment_url) && (
+    <a href={m.attachment_url} target="_blank" rel="noreferrer" className={`text-xs underline block mt-1 ${isOwner ? 'text-gray-600' : 'text-white/90'}`}>
+        {m.attachment_name ?? 'Attachment'}
+    </a>
+)}
                                             <p className={`text-[10px] mt-1 ${isOwner ? 'text-gray-400' : 'text-white/70'}`}>{formatPHTime(m.created_at)}</p>
                                         </div>
                                     </div>
