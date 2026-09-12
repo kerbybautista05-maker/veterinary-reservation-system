@@ -579,16 +579,17 @@ function AppHeader() {
                                         {openGroup === group.label && (
                                             <div className="absolute left-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-40" style={{ animation: 'dropIn 0.15s ease-out' }}>
                                                 {group.items.map((item, ii) => (
-                                                    <Link key={ii} href={item.href} preserveScroll onClick={closeAll}
-                                                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors">
-                                                        <item.icon className={`w-4 h-4 ${theme.text} flex-shrink-0`} />
-                                                        <div className="min-w-0">
-                                                            <p className="text-[13px] font-semibold text-gray-800 truncate">{item.title}</p>
-                                                            {item.subtitle && <p className="text-[11px] text-gray-400 truncate">{item.subtitle}</p>}
-                                                        </div>
-                                                        {item.isChatItem && chatUnread > 0 && <UnreadBadge count={chatUnread} className="ml-auto" />}
-                                                    </Link>
-                                                ))}
+    <Link key={ii} href={item.href} preserveScroll onClick={closeAll}
+        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors">
+        <item.icon className={`w-4 h-4 ${theme.text} flex-shrink-0`} />
+        <div className="min-w-0">
+            <p className="text-[13px] font-semibold text-gray-800 truncate">{item.title}</p>
+            {item.subtitle && <p className="text-[11px] text-gray-400 truncate">{item.subtitle}</p>}
+        </div>
+        {item.isChatItem && chatUnread > 0 && <UnreadBadge count={chatUnread} className="ml-auto" />}
+        {item.title === 'Approvals' && pendingApprovals > 0 && <UnreadBadge count={pendingApprovals} className="ml-auto" />}
+    </Link>
+))}
                                             </div>
                                         )}
                                     </div>
