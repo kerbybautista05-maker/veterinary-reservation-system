@@ -24,7 +24,7 @@ export default function Register() {
         email: '', phone_number: '', address: '',
         password: '', password_confirmation: '', terms_accepted: false,
     });
-
+    const sanitizeName = (value: string) => value.replace(/[^a-zA-Z\s\-']/g, '');
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         post(route('register'), { onFinish: () => reset('password', 'password_confirmation') });
@@ -85,7 +85,7 @@ export default function Register() {
                                     <div className="relative">
                                         <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: C.blue }} />
                                         <Input id="first_name" required autoFocus tabIndex={1} value={data.first_name}
-                                            onChange={e => setData('first_name', e.target.value)}
+    onChange={e => setData('first_name', sanitizeName(e.target.value))}
                                             className="w-full rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 py-3 text-sm font-medium focus:ring-2 focus:border-transparent transition-all"
                                             style={{ '--tw-ring-color': C.blue } as React.CSSProperties} />
                                     </div>
@@ -94,7 +94,7 @@ export default function Register() {
                                 <div>
                                     <Label htmlFor="last_name" className="text-gray-700 font-bold mb-1.5 block text-sm">Last Name</Label>
                                     <Input id="last_name" required tabIndex={2} value={data.last_name}
-                                        onChange={e => setData('last_name', e.target.value)}
+    onChange={e => setData('last_name', sanitizeName(e.target.value))}
                                         className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium focus:ring-2 focus:border-transparent transition-all"
                                         style={{ '--tw-ring-color': C.blue } as React.CSSProperties} />
                                     <InputError message={errors.last_name} className="text-red-500 mt-1.5 text-xs font-medium" />
@@ -105,14 +105,14 @@ export default function Register() {
                                 <div>
                                     <Label htmlFor="middle_name" className="text-gray-700 font-bold mb-1.5 block text-sm">Middle Name <span className="text-gray-300 font-medium">(optional)</span></Label>
                                     <Input id="middle_name" tabIndex={3} value={data.middle_name}
-                                        onChange={e => setData('middle_name', e.target.value)}
+    onChange={e => setData('middle_name', sanitizeName(e.target.value))}
                                         className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium focus:ring-2 focus:border-transparent transition-all"
                                         style={{ '--tw-ring-color': C.blue } as React.CSSProperties} />
                                 </div>
                                 <div>
                                     <Label htmlFor="suffix" className="text-gray-700 font-bold mb-1.5 block text-sm">Suffix <span className="text-gray-300 font-medium">(optional)</span></Label>
                                     <Input id="suffix" tabIndex={4} placeholder="Jr., Sr., III…" value={data.suffix}
-                                        onChange={e => setData('suffix', e.target.value)}
+    onChange={e => setData('suffix', e.target.value.replace(/[^a-zA-Z\s.]/g, ''))}
                                         className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium focus:ring-2 focus:border-transparent transition-all"
                                         style={{ '--tw-ring-color': C.blue } as React.CSSProperties} />
                                 </div>

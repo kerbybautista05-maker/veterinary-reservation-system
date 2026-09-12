@@ -31,18 +31,22 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
-            'first_name'      => ['required', 'string', 'max:100'],
-            'last_name'       => ['required', 'string', 'max:100'],
-            'middle_name'     => ['nullable', 'string', 'max:100'],
-            'suffix'          => ['nullable', 'string', 'max:20'],
+            'first_name'      => ['required', 'string', 'max:100', 'regex:/^[a-zA-Z\s\-\']+$/'],
+            'last_name'       => ['required', 'string', 'max:100', 'regex:/^[a-zA-Z\s\-\']+$/'],
+            'middle_name'     => ['nullable', 'string', 'max:100', 'regex:/^[a-zA-Z\s\-\']+$/'],
+            'suffix'          => ['nullable', 'string', 'max:20', 'regex:/^[a-zA-Z\s\-\.]+$/'],
             'email'           => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'phone_number'    => ['nullable', 'string', 'max:30', 'regex:/^[0-9+\-\s()]{7,20}$/'],
             'address'         => ['nullable', 'string'],
             'password'        => ['required', 'confirmed', Rules\Password::min(8)->letters()->numbers()],
             'terms_accepted'  => ['required', 'accepted'],
         ], [
-            'email.unique'             => 'This email is already registered.',
-            'terms_accepted.accepted'  => 'You must accept the terms to continue.',
+    'email.unique'             => 'This email is already registered.',
+    'terms_accepted.accepted'  => 'You must accept the terms to continue.',
+    'first_name.regex'         => 'First name can only contain letters.',
+    'last_name.regex'          => 'Last name can only contain letters.',
+    'middle_name.regex'        => 'Middle name can only contain letters.',
+    'suffix.regex'             => 'Suffix can only contain letters.',
         ]);
 
         if ($validator->fails()) {
