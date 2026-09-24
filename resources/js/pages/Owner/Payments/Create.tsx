@@ -13,8 +13,6 @@ const METHODS: { value: PaymentMethod; label: string }[] = [
     { value: 'gcash', label: 'GCash' },
     { value: 'paymaya', label: 'PayMaya' },
     { value: 'bank_transfer', label: 'Bank Transfer' },
-    { value: 'credit_card', label: 'Credit Card' },
-    { value: 'debit_card', label: 'Debit Card' },
 ];
 
 export default function PaymentCreate() {
@@ -51,7 +49,6 @@ export default function PaymentCreate() {
     const onMethodChange = (m: PaymentMethod) => {
         setMethod(m);
         if (m === 'cash') {
-            setReference('');
             setReceipt(null);
             setPreview(null);
         }
@@ -80,7 +77,6 @@ export default function PaymentCreate() {
         }
         if (method !== 'cash') {
             const clientErrors: Record<string, string[]> = {};
-            if (!reference.trim()) clientErrors.transaction_reference = ['Reference number is required for online payments.'];
             if (!receipt) clientErrors.receipt = ['Receipt / proof of payment is required for online payments.'];
             if (Object.keys(clientErrors).length > 0) {
                 setErrors(clientErrors);
@@ -94,7 +90,7 @@ export default function PaymentCreate() {
             amount: Number(amount),
             currency: 'PHP',
             payment_method: method,
-            transaction_reference: reference || undefined,
+            payment_reference: reference || undefined,
             receipt: receipt ?? undefined,
             notes: notes || undefined,
         });
@@ -167,17 +163,16 @@ export default function PaymentCreate() {
                             </div>
                         </div>
 
-                        {method !== 'cash' && (
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 mb-1.5">
-                                    Reference / Transaction Number <span className="text-red-400">*</span>
-                                </label>
-                                <input value={reference} onChange={e => setReference(e.target.value)}
-                                    placeholder="e.g. GCash reference number"
-                                    className={`w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 ${errors.transaction_reference ? 'border-red-300 focus:ring-red-200' : 'border-gray-200 focus:ring-sky-200'}`} />
-                                {errors.transaction_reference && <p className="text-xs text-red-500 mt-1">{errors.transaction_reference[0]}</p>}
-                            </div>
-                        )}
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 mb-1.5">
+                                Payment Reference <span className="text-gray-300 font-medium">(optional)</span>
+                            </label>
+                            <input value={reference} onChange={e => setReference(e.target.value)}
+                                placeholder="Enter reference number"
+                                className={`w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 ${errors.payment_reference ? 'border-red-300 focus:ring-red-200' : 'border-gray-200 focus:ring-sky-200'}`} />
+                            <p className="text-xs text-gray-400 mt-1.5">Transaction or reference number for GCash, PayMaya, or Bank Transfer.</p>
+                            {errors.payment_reference && <p className="text-xs text-red-500 mt-1">{errors.payment_reference[0]}</p>}
+                        </div>
 
                         <div>
                             <label className="block text-xs font-bold text-gray-500 mb-1.5">

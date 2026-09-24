@@ -19,13 +19,13 @@ export interface PaymentCreateData {
     amount: number;
     currency?: string;
     payment_method: PaymentMethod;
-    transaction_reference?: string;
+    payment_reference?: string;
     receipt?: File;
     notes?: string;
 }
 
 export interface MarkPaidData {
-    transaction_reference?: string;
+    payment_reference?: string;
 }
 
 // ─── Service class ────────────────────────────────────────────────────────────

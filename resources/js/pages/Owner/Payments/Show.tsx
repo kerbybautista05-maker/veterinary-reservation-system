@@ -40,7 +40,7 @@ export default function OwnerPaymentShow({ paymentId }: { paymentId: number | st
 
                         <div className="space-y-3 mt-6 text-sm">
                             <Row label="Method" value={payment.payment_method.replace('_', ' ')} />
-                            {payment.transaction_reference && <Row label="Reference" value={payment.transaction_reference} />}
+                            {payment.payment_reference && <Row label="Payment Reference" value={payment.payment_reference} />}
                             <Row label="Date" value={formatPHDateTime(payment.paid_at ?? payment.created_at)} />
                             {payment.appointment?.pet && <Row label="For" value={payment.appointment.pet.name} />}
                         </div>

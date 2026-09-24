@@ -423,6 +423,28 @@ function AppHeader() {
         return () => clearInterval(interval);
     }, [fetchPendingAppointments]);
 
+    // ── Pending payments badge (Admin only) ───────────────────────────────────
+    // A payment counts until it has been reviewed (approve / reject), i.e.
+    // while its status is still "pending".
+    const [pendingPayments, setPendingPayments] = useState(0);
+
+    const fetchPendingPayments = useCallback(async () => {
+        if (userRole !== 'admin') return;
+        try {
+            const res = await csrfGet('/api/payments?status=pending&per_page=1');
+            if (!res.ok) return;
+            const json = await res.json();
+            if (json.success) setPendingPayments(json.pagination?.total ?? 0);
+        } catch { /* silent */ }
+    }, [userRole]);
+
+    useEffect(() => {
+        if (userRole !== 'admin') return;
+        fetchPendingPayments();
+        const interval = setInterval(fetchPendingPayments, 30_000);
+        return () => clearInterval(interval);
+    }, [fetchPendingPayments]);
+
     // ── Live notification state ───────────────────────────────────────────────
     const seedItems = normalizeNotifications(unreadNotifications as ClinicNotification[]);
     const [liveCount, setLiveCount] = useState<number>(seedItems.length);
@@ -577,6 +599,9 @@ function AppHeader() {
 {group.items.some(item => item.isChatItem) && chatUnread > 0 && (
     <UnreadBadge count={chatUnread} className="ml-0.5" />
 )}
+{group.items.some(item => item.title === 'Payments') && pendingPayments > 0 && (
+    <UnreadBadge count={pendingPayments} className="ml-0.5" />
+)}
 </button>
 
                                         {openGroup === group.label && (
@@ -591,6 +616,7 @@ function AppHeader() {
         </div>
         {item.isChatItem && chatUnread > 0 && <UnreadBadge count={chatUnread} className="ml-auto" />}
         {item.title === 'Approvals' && pendingApprovals > 0 && <UnreadBadge count={pendingApprovals} className="ml-auto" />}
+        {item.title === 'Payments' && pendingPayments > 0 && <UnreadBadge count={pendingPayments} className="ml-auto" />}
     </Link>
 ))}
                                             </div>
@@ -730,12 +756,20 @@ function AppHeader() {
                                     {group.badge === 'pending_approvals' && pendingApprovals > 0 && (
                                         <span className="ml-1 px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-black rounded-full">{pendingApprovals} pending</span>
                                     )}
+                                    {group.items.some(i => i.title === 'Payments') && pendingPayments > 0 && (
+                                        <span className="ml-1 px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-black rounded-full">{pendingPayments} pending</span>
+                                    )}
                                 </div>
                                 <div className="space-y-0.5">
-                                    {group.items.map((item, ii) => (
-                                        <MobileNavLink key={ii} item={item} theme={theme}
-                                            hasUnread={hasUnread} liveCount={liveCount} chatUnread={chatUnread} onClick={closeAll} />
-                                    ))}
+                                    {group.items.map((item, ii) => {
+                                        const navItem = userRole === 'admin' && item.title === 'Payments'
+                                            ? { ...item, badgeCount: pendingPayments }
+                                            : item;
+                                        return (
+                                            <MobileNavLink key={ii} item={navItem} theme={theme}
+                                                hasUnread={hasUnread} liveCount={liveCount} chatUnread={chatUnread} onClick={closeAll} />
+                                        );
+                                    })}
                                 </div>
                             </div>
                         ))}

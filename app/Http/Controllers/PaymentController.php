@@ -88,8 +88,8 @@ class PaymentController extends Controller
                 'appointment_id'  => 'required|exists:appointments,id',
                 'amount'          => 'required|numeric|min:0',
                 'currency'        => 'nullable|string|max:10',
-                'payment_method'  => 'required|in:cash,gcash,paymaya,credit_card,debit_card,bank_transfer',
-                'transaction_reference' => 'required_unless:payment_method,cash|nullable|string|max:150',
+                'payment_method'  => 'required|in:' . implode(',', Payment::METHODS),
+                'payment_reference' => 'nullable|string|max:150',
                 'receipt'         => 'required_unless:payment_method,cash|nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
                 'notes'           => 'nullable|string',
             ]);
@@ -105,7 +105,9 @@ class PaymentController extends Controller
 
             $data = $validator->validated();
             if ($request->hasFile('receipt')) {
-                $data['receipt_path'] = $request->file('receipt')->store('receipts', 'public');
+                // Store the proof of payment on a private disk; it is served
+                // back only through the authorized receipt endpoint.
+                $data['receipt_path'] = $request->file('receipt')->store('receipts', 'local');
             }
             unset($data['receipt']);
 
@@ -151,6 +153,43 @@ class PaymentController extends Controller
     }
 
     // =========================================================================
+    // receipt — Serve the receipt/proof of payment image (owner or admin only)
+    // =========================================================================
+
+    public function receipt(Request $request, $id)
+    {
+        try {
+            $payment = Payment::findOrFail($id);
+
+            // Pet Owners may only ever see their own payment receipts.
+            if (!$this->canAccess($request, $payment)) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+            }
+
+            if (!$payment->receipt_path) {
+                return response()->json(['success' => false, 'message' => 'No receipt on file for this payment.'], 404);
+            }
+
+            // New uploads live on the private 'local' disk; fall back to the
+            // 'public' disk so older records keep working.
+            foreach (['local', 'public'] as $diskName) {
+                if (Storage::disk($diskName)->exists($payment->receipt_path)) {
+                    $extension = pathinfo($payment->receipt_path, PATHINFO_EXTENSION);
+                    $filename  = 'receipt-' . $payment->id . ($extension ? '.' . $extension : '');
+                    return Storage::disk($diskName)->response($payment->receipt_path, $filename);
+                }
+            }
+
+            return response()->json(['success' => false, 'message' => 'Receipt file not found.'], 404);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
+            return response()->json(['success' => false, 'message' => 'Payment not found.'], 404);
+        } catch (\Exception $e) {
+            Log::error('Error serving payment receipt: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to load receipt.'], 500);
+        }
+    }
+
+    // =========================================================================
     // markPaid — Admin confirms a payment was received
     // =========================================================================
 
@@ -162,14 +201,14 @@ class PaymentController extends Controller
             }
 
             $validator = Validator::make($request->all(), [
-                'transaction_reference' => 'nullable|string|max:150',
+                'payment_reference' => 'nullable|string|max:150',
             ]);
             if ($validator->fails()) {
                 return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
             }
 
             $payment = Payment::findOrFail($id);
-            $payment->markAsPaid($request->input('transaction_reference'));
+            $payment->markAsPaid($request->input('payment_reference'));
 
             ActivityLog::record($request->user(), 'marked_payment_paid', $payment);
 

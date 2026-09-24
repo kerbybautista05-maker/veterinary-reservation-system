@@ -19,18 +19,20 @@ export default function AdminDashboard() {
     const [todaysAppointments, setTodaysAppointments] = useState<Appointment[]>([]);
     const [pendingFeedback, setPendingFeedback] = useState(0);
     const [totalRevenue, setTotalRevenue] = useState(0);
+    const [pendingPayments, setPendingPayments] = useState(0);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
             const today = new Date().toISOString().slice(0, 10);
-            const [approvals, owners, vets, appts, feedback, payments] = await Promise.all([
+            const [approvals, owners, vets, appts, feedback, payments, pendingPaymentsRes] = await Promise.all([
                 userService.getPendingApprovals({ per_page: 1 }),
                 userService.getPetOwners({ per_page: 1 }),
                 userService.getVeterinarianAccounts({ per_page: 1 }),
                 appointmentService.getAppointments({ date_from: today, date_to: today, per_page: 50 }),
                 feedbackService.getFeedback({ include_unpublished: true, per_page: 1 }),
                 paymentService.getPayments({ per_page: 1 }),
+                paymentService.getPayments({ status: 'pending', per_page: 1 }),
             ]);
             setPendingApprovals(approvals.pagination?.total ?? 0);
             setTotalPetOwners(owners.pagination?.total ?? 0);
@@ -38,6 +40,7 @@ export default function AdminDashboard() {
             setTodaysAppointments(appts.data ?? []);
             setPendingFeedback(feedback.pagination?.total ?? 0);
             setTotalRevenue(payments.total_revenue ?? 0);
+            setPendingPayments(pendingPaymentsRes.pagination?.total ?? 0);
         } finally {
             setLoading(false);
         }
@@ -52,7 +55,7 @@ export default function AdminDashboard() {
         { title: 'Pets', href: '/admin/pets', icon: PawPrint, color: C.rose },
         { title: 'Appointments', href: '/admin/appointments', icon: CalendarClock, color: C.blue },
         { title: 'Feedback', href: '/admin/feedback', icon: Star, color: C.amber, badge: pendingFeedback || undefined },
-        { title: 'Payments', href: '/admin/payments', icon: Wallet, color: C.green },
+        { title: 'Payments', href: '/admin/payments', icon: Wallet, color: C.green, badge: pendingPayments || undefined },
         { title: 'Live Chat', href: '/admin/chat', icon: MessageSquare, color: C.rose },
     ];
 

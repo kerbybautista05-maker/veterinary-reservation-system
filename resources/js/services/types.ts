@@ -48,7 +48,7 @@ export type AppointmentStatus =
 
 export type HealthReminderType = 'vaccination' | 'deworming' | 'checkup' | 'medication' | 'grooming' | 'other';
 
-export type PaymentMethod = 'cash' | 'gcash' | 'paymaya' | 'credit_card' | 'debit_card' | 'bank_transfer';
+export type PaymentMethod = 'cash' | 'gcash' | 'paymaya' | 'bank_transfer';
 export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded' | 'cancelled';
 
 export type ChatConversationStatus = 'open' | 'pending' | 'closed';
@@ -332,7 +332,7 @@ export interface Payment {
     currency: string;
     payment_method: PaymentMethod;
     status: PaymentStatus;
-    transaction_reference?: string;
+    payment_reference?: string;
     receipt_path?: string;
     paid_at?: string | null;
     notes?: string;

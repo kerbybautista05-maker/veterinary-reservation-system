@@ -26,7 +26,7 @@ class Payment extends Model
         'currency',
         'payment_method',
         'status',
-        'transaction_reference',
+        'payment_reference',
         'receipt_path',
         'paid_at',
         'notes',
@@ -55,9 +55,15 @@ class Payment extends Model
     const METHOD_CASH          = 'cash';
     const METHOD_GCASH         = 'gcash';
     const METHOD_PAYMAYA       = 'paymaya';
-    const METHOD_CREDIT_CARD   = 'credit_card';
-    const METHOD_DEBIT_CARD    = 'debit_card';
     const METHOD_BANK_TRANSFER = 'bank_transfer';
+
+    /** Payment methods currently accepted by the clinic. */
+    const METHODS = [
+        self::METHOD_CASH,
+        self::METHOD_GCASH,
+        self::METHOD_PAYMAYA,
+        self::METHOD_BANK_TRANSFER,
+    ];
 
     const STATUS_PENDING   = 'pending';
     const STATUS_PAID      = 'paid';
@@ -104,7 +110,9 @@ class Payment extends Model
 
     public function getReceiptUrlAttribute(): ?string
     {
-        return $this->receipt_path ? asset('storage/' . $this->receipt_path) : null;
+        // Receipts are stored on a private disk and served through an
+        // authorized endpoint (owner or admin) instead of a public URL.
+        return $this->receipt_path ? url('/api/payments/' . $this->id . '/receipt') : null;
     }
 
     public function getStatusLabelAttribute(): string
@@ -131,12 +139,12 @@ class Payment extends Model
     public function isPaid(): bool { return $this->status === self::STATUS_PAID; }
     public function isPending(): bool { return $this->status === self::STATUS_PENDING; }
 
-    public function markAsPaid(?string $transactionReference = null): bool
+    public function markAsPaid(?string $paymentReference = null): bool
     {
         return $this->update([
-            'status'                 => self::STATUS_PAID,
-            'transaction_reference'  => $transactionReference ?? $this->transaction_reference,
-            'paid_at'                => now(),
+            'status'           => self::STATUS_PAID,
+            'payment_reference'=> $paymentReference ?? $this->payment_reference,
+            'paid_at'          => now(),
         ]);
     }
 
