@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\BrevoMail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Inertia\Response;
 use Carbon\Carbon;
@@ -157,10 +157,8 @@ class OtpVerificationController extends Controller
 
         // Send OTP via email
         try {
-            Mail::send('emails.otp', ['otp' => $otp, 'user' => $user], function ($message) use ($user) {
-                $message->to($user->email)
-                        ->subject('Verify Your Email - ' . config('app.name'));
-            });
+            $html = view('emails.otp', ['otp' => $otp, 'user' => $user])->render();
+            BrevoMail::send($user->email, $user->name ?? $user->email, 'Verify Your Email - ' . config('app.name'), $html);
         } catch (\Exception $e) {
             // Log the error but don't expose it to user
             \Log::error('Failed to send OTP email: ' . $e->getMessage());

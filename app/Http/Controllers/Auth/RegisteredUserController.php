@@ -4,13 +4,13 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\BrevoMail;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
@@ -203,9 +203,7 @@ HTML;
         );
 
         try {
-            Mail::html($html, fn ($m) =>
-                $m->to($user->email, $name)->subject('Account Pending Approval — Pet Care Clinic')
-            );
+            BrevoMail::send($user->email, $name, 'Account Pending Approval — Pet Care Clinic', $html);
         } catch (\Exception $e) {
             Log::error('sendPendingApprovalEmail: ' . $e->getMessage());
         }
@@ -254,10 +252,7 @@ HTML;
 
         foreach ($admins as $admin) {
             try {
-                Mail::html($html, fn ($m) =>
-                    $m->to($admin->email, trim($admin->first_name . ' ' . $admin->last_name))
-                      ->subject("New Pet Owner Registration — {$name}")
-                );
+                BrevoMail::send($admin->email, trim($admin->first_name . ' ' . $admin->last_name), "New Pet Owner Registration — {$name}", $html);
             } catch (\Exception $e) {
                 Log::error('notifyAdminsOfNewRegistration: ' . $e->getMessage());
             }

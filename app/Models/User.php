@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Support\ClinicMail;
 
 /**
  * A system user — Pet Owner, Veterinarian, or Administrator.
@@ -358,6 +359,26 @@ class User extends Authenticatable
             'total_veterinarians'       => self::veterinarians()->active()->count(),
             'unread_notifications'      => $this->getUnreadNotificationsCount(),
         ];
+    }
+
+    // ============================
+    // Notifications
+    // ============================
+
+    /**
+     * Send the password reset link through the shared mailer (Brevo) instead
+     * of Laravel's default notification channel.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        ClinicMail::send(
+            $this,
+            'Reset Password Notification',
+            'Reset Your Password',
+            'You are receiving this email because we received a password reset request for your account. Click the button below to set a new password.',
+            'Reset Password',
+            url(route('password.reset', ['token' => $token, 'email' => $this->email], false))
+        );
     }
 
     // ============================

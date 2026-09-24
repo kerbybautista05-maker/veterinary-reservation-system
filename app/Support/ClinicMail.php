@@ -4,7 +4,6 @@ namespace App\Support;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 /**
  * Shared branded HTML email sender for system-generated notifications
@@ -43,11 +42,7 @@ class ClinicMail
             $html = self::buildHtml($title, $bodyText, $ctaLabel, $ctaUrl);
             $name = $user->full_name ?? $user->name ?? $user->email;
 
-            Mail::html($html, function ($message) use ($user, $name, $subject) {
-                $message->to($user->email, $name)->subject($subject);
-            });
-
-            return true;
+            return BrevoMail::send($user->email, $name, $subject, $html);
         } catch (\Exception $e) {
             Log::warning('ClinicMail: failed to send to user #' . $user->id . ' — ' . $e->getMessage());
             return false;
