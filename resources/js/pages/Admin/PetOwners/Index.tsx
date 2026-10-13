@@ -74,9 +74,23 @@ export default function PetOwnersIndex() {
                                             </div>
                                         </div>
                                         <StatusPill
-                                            label={u.approval_status === 'approved' ? 'Active' : u.approval_status.charAt(0).toUpperCase() + u.approval_status.slice(1)}
-                                            color={u.approval_status === 'approved' ? 'green' : u.approval_status === 'rejected' ? 'red' : 'amber'}
-                                        />
+    label={
+        !u.is_active
+            ? 'Inactive'
+            : u.approval_status === 'approved'
+                ? 'Active'
+                : u.approval_status.charAt(0).toUpperCase() + u.approval_status.slice(1)
+    }
+    color={
+        !u.is_active
+            ? 'red'
+            : u.approval_status === 'approved'
+                ? 'green'
+                : u.approval_status === 'rejected'
+                    ? 'red'
+                    : 'amber'
+    }
+/>
                                         <div className="flex items-center gap-1 shrink-0">
                                             <Link href={`/admin/pet-owners/${u.id}`} className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"><Eye className="w-4 h-4" /></Link>
                                             <Link href={`/admin/pet-owners/${u.id}/edit`} className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"><Pencil className="w-4 h-4" /></Link>
