@@ -236,11 +236,11 @@ function UserAvatar({ user, size = 'md', theme, className = '' }: {
 }
 
 const ClinicLogo = () => (
-    <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
+    <div className="flex items-center gap-2 flex-shrink-0 select-none">
         <img src="/logo.png" alt="NE Veterinary Clinic"
-            className="h-9 w-auto sm:h-11 md:h-12 object-contain group-hover:scale-105 transition-transform duration-200" />
+            className="h-9 w-auto sm:h-11 md:h-12 object-contain" />
         <span className="hidden sm:inline font-black text-[15px] text-[#0F3C2D] tracking-tight">NE Veterinary Clinic</span>
-    </Link>
+    </div>
 );
 
 // ─── Unread badge ─────────────────────────────────────────────────────────────
