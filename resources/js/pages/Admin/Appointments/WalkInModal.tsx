@@ -32,7 +32,6 @@ const getToday = () =>
     new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 
 interface WalkInModalProps {
-interface WalkInModalProps {
     open: boolean;
     onClose: () => void;
     onSuccess: () => void;
