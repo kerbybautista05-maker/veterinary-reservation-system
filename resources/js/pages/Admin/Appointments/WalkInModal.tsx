@@ -28,7 +28,10 @@ const SEVERITY_OPTIONS = [
     { value: 'serious', label: 'Serious' },
     { value: 'moderate', label: 'Moderate' },
 ];
+const getToday = () =>
+    new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 
+interface WalkInModalProps {
 interface WalkInModalProps {
     open: boolean;
     onClose: () => void;
@@ -51,7 +54,7 @@ export default function WalkInModal({ open, onClose, onSuccess }: WalkInModalPro
     const [otherService, setOtherService] = useState('');
     const [vetId, setVetId] = useState('');
     const [reason, setReason] = useState('');
-    const [apptDate, setApptDate] = useState(new Date().toISOString().slice(0, 10));
+    const [apptDate, setApptDate] = useState(getToday());
     const [apptTime, setApptTime] = useState(() => {
         const n = new Date();
         return `${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}`;
@@ -85,7 +88,7 @@ export default function WalkInModal({ open, onClose, onSuccess }: WalkInModalPro
         setServiceType(''); setOtherService(''); setVetId('');
         setReason(''); setSymptoms([]); setSeverity('');
         setOtherSymptom(''); setStatus('confirmed');
-        setApptDate(new Date().toISOString().slice(0, 10));
+        setApptDate(getToday());
         const n = new Date();
         setApptTime(`${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}`);
         setErrors({});
@@ -114,7 +117,7 @@ export default function WalkInModal({ open, onClose, onSuccess }: WalkInModalPro
         const payload: Record<string, any> = {
             owner_name: ownerName,
             owner_phone: ownerPhone,
-            owner_email: ownerEmail || undefined,
+            owner_email: ownerEmail,
             pet_name: petName,
             pet_species: petSpecies,
             pet_breed: petBreed || undefined,
@@ -194,9 +197,9 @@ export default function WalkInModal({ open, onClose, onSuccess }: WalkInModalPro
                             </div>
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 mb-1">Email Address <span className="text-gray-400 font-normal">(optional)</span></label>
-                            <input type="email" value={ownerEmail} onChange={e => setOwnerEmail(e.target.value)}
-                                className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-200" />
+                            <label className="block text-xs font-bold text-gray-500 mb-1">Email Address <span className="text-red-400">*</span></label>
+                            <input type="email" value={ownerEmail} onChange={e => setOwnerEmail(e.target.value)} required
+                             className={`w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 ${errors.owner_email ? 'border-red-300 focus:ring-red-200' : 'border-gray-200 focus:ring-sky-200'}`} />
                             {errors.owner_email && <p className="text-xs text-red-500 mt-1">{errors.owner_email[0]}</p>}
                         </div>
                     </fieldset>
@@ -264,7 +267,7 @@ export default function WalkInModal({ open, onClose, onSuccess }: WalkInModalPro
                         <div className="grid sm:grid-cols-2 gap-3">
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 mb-1">Date</label>
-                                <input type="date" value={apptDate} onChange={e => setApptDate(e.target.value)}
+                                <input type="date" value={apptDate} min={new Date().toISOString().slice(0, 10)} onChange={e => setApptDate(e.target.value)}
                                     className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-200" />
                             </div>
                             <div>
