@@ -3,6 +3,13 @@ import { X, Plus, Search, Siren } from 'lucide-react';
 import { appointmentService, veterinarianService } from '../../../services';
 import type { User } from '../../../services';
 import { C } from '../_shared/AdminUI';
+import SearchableSelect from '@/components/SearchableSelect';
+import { SPECIES_OPTIONS, DOG_BREEDS, CAT_BREEDS } from '@/data/breeds';
+
+const BREEDS_BY_SPECIES: Record<string, string[]> = {
+    Dog: DOG_BREEDS,
+    Cat: CAT_BREEDS,
+};
 
 const SERVICES = [
     'Vaccine', 'Surgery', 'Grooming', 'Breeding', 'Bathing',
@@ -91,9 +98,18 @@ export default function WalkInModal({ open, onClose, onSuccess }: WalkInModalPro
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setSaving(true);
-        setErrors({});
+    e.preventDefault();
+
+    const clientErrors: Record<string, string[]> = {};
+    if (!petSpecies) clientErrors.pet_species = ['Species is required.'];
+    if (!petBreed) clientErrors.pet_breed = ['Breed is required.'];
+    if (Object.keys(clientErrors).length > 0) {
+        setErrors(clientErrors);
+        return;
+    }
+
+    setSaving(true);
+    setErrors({});
 
         const payload: Record<string, any> = {
             owner_name: ownerName,
@@ -195,17 +211,24 @@ export default function WalkInModal({ open, onClose, onSuccess }: WalkInModalPro
                                     className={`w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 ${errors.pet_name ? 'border-red-300 focus:ring-red-200' : 'border-gray-200 focus:ring-sky-200'}`} />
                                 {errors.pet_name && <p className="text-xs text-red-500 mt-1">{errors.pet_name[0]}</p>}
                             </div>
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 mb-1">Species <span className="text-red-400">*</span></label>
-                                <input value={petSpecies} onChange={e => setPetSpecies(e.target.value)} required placeholder="e.g. Dog, Cat"
-                                    className={`w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 ${errors.pet_species ? 'border-red-300 focus:ring-red-200' : 'border-gray-200 focus:ring-sky-200'}`} />
-                                {errors.pet_species && <p className="text-xs text-red-500 mt-1">{errors.pet_species[0]}</p>}
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 mb-1">Breed <span className="text-gray-400 font-normal">(optional)</span></label>
-                                <input value={petBreed} onChange={e => setPetBreed(e.target.value)}
-                                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-200" />
-                            </div>
+                            <SearchableSelect
+    label="Species"
+    value={petSpecies}
+    options={SPECIES_OPTIONS}
+    onChange={(val: string) => { setPetSpecies(val); setPetBreed(''); }}
+    error={errors.pet_species}
+    placeholder="Select species…"
+    required
+/>
+<SearchableSelect
+    label="Breed"
+    value={petBreed}
+    options={petSpecies ? (BREEDS_BY_SPECIES[petSpecies] ?? []) : []}
+    onChange={(val: string) => setPetBreed(val)}
+    error={errors.pet_breed}
+    placeholder={petSpecies ? 'Select breed…' : 'Select species first…'}
+    required
+/>
                         </div>
                     </fieldset>
 
