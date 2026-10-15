@@ -36,7 +36,7 @@ class RegisteredUserController extends Controller
             'middle_name'     => ['nullable', 'string', 'max:100', 'regex:/^[a-zA-Z\s\-\']+$/'],
             'suffix'          => ['nullable', 'string', 'max:20', 'regex:/^[a-zA-Z\s\-\.]+$/'],
             'email'           => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'phone_number'    => ['nullable', 'string', 'max:30', 'regex:/^[0-9+\-\s()]{7,20}$/'],
+            'phone_number' => ['required', 'string', 'regex:/^(09|\+639)\d{9}$/'],
             'address'         => ['nullable', 'string'],
             'password'        => ['required', 'confirmed', Rules\Password::min(8)->letters()->numbers()],
             'terms_accepted'  => ['required', 'accepted'],
@@ -47,6 +47,7 @@ class RegisteredUserController extends Controller
     'last_name.regex'          => 'Last name can only contain letters.',
     'middle_name.regex'        => 'Middle name can only contain letters.',
     'suffix.regex'             => 'Suffix can only contain letters.',
+    'phone_number.regex'    => 'Enter a valid PH mobile number (e.g. 09123456789).',
         ]);
 
         if ($validator->fails()) {

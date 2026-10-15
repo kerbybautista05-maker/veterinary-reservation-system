@@ -131,11 +131,11 @@ export default function Register() {
                             </div>
 
                             <div>
-                                <Label htmlFor="phone_number" className="text-gray-700 font-bold mb-1.5 block text-sm">Phone Number <span className="text-gray-300 font-medium">(optional)</span></Label>
-                                <div className="relative">
-                                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: C.blue }} />
-                                    <Input id="phone_number" tabIndex={6} value={data.phone_number}
-                                        onChange={e => setData('phone_number', e.target.value)} placeholder="09xx xxx xxxx"
+                                <Label htmlFor="phone_number" className="text-gray-700 font-bold mb-1.5 block text-sm">Phone Number <span className="text-red-400">*</span></Label>
+                                    <div className="relative">
+                                 <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: C.blue }} />
+                                 <Input id="phone_number" type="tel" required maxLength={13} tabIndex={6} value={data.phone_number}
+                                       onChange={e => setData('phone_number', e.target.value.replace(/[^0-9+]/g, ''))} placeholder="09xxxxxxxxx"
                                         className="w-full rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 py-3 text-sm font-medium focus:ring-2 focus:border-transparent transition-all"
                                         style={{ '--tw-ring-color': C.blue } as React.CSSProperties} />
                                 </div>
