@@ -134,6 +134,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::get('/activity-logs', fn () => Inertia::render('Admin/ActivityLogs'))->name('activity-logs');
     Route::get('/login-logs',    fn () => Inertia::render('Admin/LoginLogs'))->name('login-logs');
 });
-
+Route::get('/cron/daily-reminders/{token}', function (string $token) {
+    abort_unless(hash_equals((string) config('app.cron_token'), $token), 403);
+    \Illuminate\Support\Facades\Artisan::call('reminders:send-daily');
+    return response(\Illuminate\Support\Facades\Artisan::output(), 200)
+        ->header('Content-Type', 'text/plain');
+});
 require __DIR__ . '/auth.php';
 require __DIR__ . '/settings.php';
