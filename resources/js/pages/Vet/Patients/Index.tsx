@@ -32,9 +32,9 @@ export default function VetPatientsIndex() {
 
     return (
         <AppLayout>
-            <Head title="Patients" />
+            <Head title="Pet Medical Records" />
             <div className="min-h-screen" style={{ background: C.bg }}>
-                <PageHeader icon={ClipboardList} title="Patients" subtitle="Manage pet medical records" />
+                <PageHeader icon={ClipboardList} title="Pet Medical Records" subtitle="Manage pet medical records" />
 
                 <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 space-y-4">
                     <div className="relative">

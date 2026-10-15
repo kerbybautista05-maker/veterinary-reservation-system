@@ -148,7 +148,7 @@ function getNavConfig(role: string): NavConfig {
                 { title: 'Dashboard',    href: '/vet/dashboard',    icon: LayoutDashboard },
                 { title: 'Appointments', href: '/vet/appointments', icon: CalendarClock   },
                 { title: 'Calendar',     href: '/vet/calendar',     icon: CalendarDays    },
-                { title: 'Patients',     href: '/vet/patients',     icon: Stethoscope     },
+                { title: 'Pet Medical Records',     href: '/vet/patients',     icon: Stethoscope     },
             ],
             groups: [
                 {
