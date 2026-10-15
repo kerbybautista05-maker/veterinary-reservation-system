@@ -131,7 +131,7 @@ export default function Register() {
                             </div>
 
                             <div>
-                                <Label htmlFor="phone_number" className="text-gray-700 font-bold mb-1.5 block text-sm">Phone Number <span className="text-red-400">*</span></Label>
+                                <Label htmlFor="phone_number" className="text-gray-700 font-bold mb-1.5 block text-sm">Phone Number</Label>
                                     <div className="relative">
                                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: C.blue }} />
                                  <Input id="phone_number" type="tel" required maxLength={13} tabIndex={6} value={data.phone_number}
