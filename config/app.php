@@ -65,7 +65,9 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => env('APP_TIMEZONE', 'Asia/Manila'),
+
+    'cron_token' => env('CRON_TOKEN'),
 
     /*
     |--------------------------------------------------------------------------
