@@ -79,19 +79,22 @@ class PetMedicalRecordController extends Controller
             $guard = $this->vetOrAdminOnly($request);
             if ($guard) return $guard;
 
-            $search = $request->input('q', '');
-            if (strlen($search) < 2) {
-                return response()->json(['success' => false, 'message' => 'Search term must be at least 2 characters.'], 422);
-            }
+            $search = trim((string) $request->input('q', ''));
 
-            $pets = Pet::with('owner')
-                ->search($search)
-                ->orWhereHas('owner', fn ($q) => $q->where('first_name', 'like', "%{$search}%")
-                                                     ->orWhere('last_name', 'like', "%{$search}%"))
-                ->limit(25)
-                ->get();
+$query = Pet::with('owner');
 
-            return response()->json(['success' => true, 'data' => $pets]);
+if ($search !== '') {
+    $query->where(function ($w) use ($search) {
+        $w->search($search)
+          ->orWhereHas('owner', fn ($q) => $q
+              ->where('first_name', 'like', "%{$search}%")
+              ->orWhere('last_name', 'like', "%{$search}%"));
+    });
+}
+
+$pets = $query->orderBy('name')->limit(100)->get();
+
+return response()->json(['success' => true, 'data' => $pets]);
 
         } catch (\Exception $e) {
             Log::error('Error searching patients: ' . $e->getMessage());
