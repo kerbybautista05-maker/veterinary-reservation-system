@@ -141,7 +141,7 @@ return response()->json(['success' => true, 'data' => $pets]);
 
             if ($request->hasFile('attachments')) {
                 $data['attachments'] = collect($request->file('attachments'))
-                    ->map(fn ($file) => $file->store('medical-records', 'public'))
+                    ->map(fn ($file) => $file->store('medical-records', 's3'))
                     ->all();
             } else {
                 unset($data['attachments']);

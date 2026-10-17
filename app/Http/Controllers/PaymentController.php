@@ -107,7 +107,7 @@ class PaymentController extends Controller
             if ($request->hasFile('receipt')) {
                 // Store the proof of payment on a private disk; it is served
                 // back only through the authorized receipt endpoint.
-                $data['receipt_path'] = $request->file('receipt')->store('receipts', 'local');
+                $data['receipt_path'] = $request->file('receipt')->store('payments', 's3_private');
             }
             unset($data['receipt']);
 
@@ -172,7 +172,7 @@ class PaymentController extends Controller
 
             // New uploads live on the private 'local' disk; fall back to the
             // 'public' disk so older records keep working.
-            foreach (['local', 'public'] as $diskName) {
+            foreach (['s3_private', 'local', 'public'] as $diskName) {
                 if (Storage::disk($diskName)->exists($payment->receipt_path)) {
                     $extension = pathinfo($payment->receipt_path, PATHINFO_EXTENSION);
                     $filename  = 'receipt-' . $payment->id . ($extension ? '.' . $extension : '');

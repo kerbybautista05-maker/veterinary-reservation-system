@@ -152,7 +152,7 @@ class AnnouncementController extends Controller
             $data['is_published'] = true;
 
             if ($request->hasFile('image')) {
-                $data['image_path'] = $request->file('image')->store('announcements', 'public');
+                $data['image_path'] = $request->file('image')->store('announcements', 's3');
             }
             unset($data['image']);
 
@@ -234,11 +234,11 @@ class AnnouncementController extends Controller
 
             if ($request->hasFile('image')) {
                 if ($announcement->image_path) {
-                    Storage::disk('public')->delete($announcement->image_path);
+                    Storage::disk('s3')->delete($announcement->image_path);
                 }
-                $data['image_path'] = $request->file('image')->store('announcements', 'public');
+                $data['image_path'] = $request->file('image')->store('announcements', 's3');
             } elseif ($request->boolean('remove_image') && $announcement->image_path) {
-                Storage::disk('public')->delete($announcement->image_path);
+                Storage::disk('s3')->delete($announcement->image_path);
                 $data['image_path'] = null;
             }
             unset($data['image']);
@@ -278,7 +278,7 @@ class AnnouncementController extends Controller
             $title        = $announcement->title;
 
             if ($announcement->image_path) {
-                Storage::disk('public')->delete($announcement->image_path);
+                Storage::disk('s3')->delete($announcement->image_path);
             }
 
             $announcement->delete();

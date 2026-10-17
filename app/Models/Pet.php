@@ -133,7 +133,9 @@ class Pet extends Model
 
     public function getPhotoUrlAttribute(): ?string
     {
-        return $this->photo_path ? asset('storage/' . $this->photo_path) : null;
+        return $this->photo_path
+    ? \Illuminate\Support\Facades\Storage::disk('s3')->url($this->photo_path)
+    : null;
     }
 
     public function getAgeAttribute(): ?int

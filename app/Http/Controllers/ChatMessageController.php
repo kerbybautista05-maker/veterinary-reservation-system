@@ -93,7 +93,7 @@ class ChatMessageController extends Controller
 
             if ($request->hasFile('attachment')) {
                 $file = $request->file('attachment');
-                $data['attachment_path'] = $file->store('chat-attachments', 'public');
+                $data['attachment_path'] = $file->store('chat-attachments', 's3');
                 $data['attachment_name'] = $file->getClientOriginalName();
             }
 
@@ -168,7 +168,7 @@ class ChatMessageController extends Controller
             $message = ChatMessage::findOrFail($id);
 
             if ($message->attachment_path) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($message->attachment_path);
+                \Illuminate\Support\Facades\Storage::disk('s3')->delete($message->attachment_path);
             }
             $message->delete();
 

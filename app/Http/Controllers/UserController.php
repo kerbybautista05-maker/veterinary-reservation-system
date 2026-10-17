@@ -35,16 +35,16 @@ class UserController extends Controller
         if (!$request->hasFile('profile_photo')) return null;
 
         if ($user->profile_photo_path) {
-            Storage::disk('public')->delete($user->profile_photo_path);
-        }
+    Storage::disk('s3')->delete($user->profile_photo_path);
+}
 
-        return $request->file('profile_photo')->store('profile-photos', 'public');
+return $request->file('profile_photo')->store('profile-photos', 's3');
     }
 
     private function removeProfilePhoto(User $user): void
     {
         if ($user->profile_photo_path) {
-            Storage::disk('public')->delete($user->profile_photo_path);
+            Storage::disk('s3')->delete($user->profile_photo_path);
             $user->update(['profile_photo_path' => null]);
         }
     }
@@ -176,7 +176,7 @@ class UserController extends Controller
             $data['is_active']        = true;
 
             if ($request->hasFile('profile_photo')) {
-                $data['profile_photo_path'] = $request->file('profile_photo')->store('profile-photos', 'public');
+                $data['profile_photo_path'] = $request->file('profile_photo')->store('profile-photos', 's3');
             }
 
             $vetFields = array_intersect_key($data, array_flip([

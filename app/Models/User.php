@@ -102,11 +102,11 @@ class User extends Authenticatable
     }
 
     public function getProfilePhotoUrlAttribute(): ?string
-    {
-        return $this->profile_photo_path
-            ? asset('storage/' . $this->profile_photo_path)
-            : null;
-    }
+{
+    return $this->profile_photo_path
+        ? \Illuminate\Support\Facades\Storage::disk('s3')->url($this->profile_photo_path)
+        : null;
+}
 
     // ============================
     // Relationships

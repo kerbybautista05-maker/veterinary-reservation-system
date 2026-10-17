@@ -121,7 +121,7 @@ class PetController extends Controller
             }
 
             if ($request->hasFile('photo')) {
-                $data['photo_path'] = $request->file('photo')->store('pets', 'public');
+                $data['photo_path'] = $request->file('photo')->store('pets', 's3');
             }
             unset($data['photo']);
 
@@ -214,12 +214,12 @@ class PetController extends Controller
 
             if ($request->hasFile('photo')) {
                 if ($pet->photo_path) {
-                    Storage::disk('public')->delete($pet->photo_path);
+                    Storage::disk('s3')->delete($pet->photo_path);
                 }
-                $data['photo_path'] = $request->file('photo')->store('pets', 'public');
+                    $data['photo_path'] = $request->file('photo')->store('pets', 's3');
             } elseif ($request->boolean('remove_photo') && $pet->photo_path) {
-                Storage::disk('public')->delete($pet->photo_path);
-                $data['photo_path'] = null;
+                Storage::disk('s3')->delete($pet->photo_path);
+            $data['photo_path'] = null;
             }
             unset($data['photo'], $data['remove_photo']);
 
