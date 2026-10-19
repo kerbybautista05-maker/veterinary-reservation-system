@@ -225,7 +225,7 @@ export default function WalkInModal({ open, onClose, onSuccess }: WalkInModalPro
     label="Species"
     value={petSpecies}
     options={SPECIES_OPTIONS}
-    onChange={(val: string) => { setPetSpecies(val); setPetBreed(''); }}
+    onChange={(val: string) => { setPetSpecies(val); setPetBreed(''); setVaccineType(''); }}
     error={errors.pet_species}
     placeholder="Select species…"
     required
@@ -234,7 +234,7 @@ export default function WalkInModal({ open, onClose, onSuccess }: WalkInModalPro
     label="Breed"
     value={petBreed}
     options={petSpecies ? (BREEDS_BY_SPECIES[petSpecies] ?? []) : []}
-    onChange={(val: string) => { setPetSpecies(val); setPetBreed(''); setVaccineType(''); }}
+    onChange={(val: string) => setPetBreed(val)}
     error={errors.pet_breed}
     placeholder={petSpecies ? 'Select breed…' : 'Select species first…'}
     required
