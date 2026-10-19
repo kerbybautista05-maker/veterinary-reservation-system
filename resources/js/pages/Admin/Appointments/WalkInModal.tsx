@@ -12,9 +12,14 @@ const BREEDS_BY_SPECIES: Record<string, string[]> = {
 };
 
 const SERVICES = [
-    'Vaccine', 'Surgery', 'Grooming', 'Breeding', 'Bathing',
-    'Deworming', 'Ultrasound', 'ICG', '2D Echo', 'Consultation', 'Other',
+    'Vaccine', 'Deworming', 'Grooming', 'Bathing', 'Treatment',
+    'Ultrasound', 'ECG', '2D Echo', 'CBC & Blood Chemistry', 'Other',
 ];
+
+const VACCINE_TYPES: Record<string, string[]> = {
+    Dog: ['Ceinl', '5-in-1', '4-in-1', 'Kennel Cough', 'Biocan M', 'Anti-Rabies'],
+    Cat: ['4-in-1', 'Anti-Rabies'],
+};
 
 const SYMPTOMS = [
     'Difficulty breathing', 'Severe bleeding', 'Seizures or collapse',
@@ -50,6 +55,7 @@ export default function WalkInModal({ open, onClose, onSuccess }: WalkInModalPro
     const [petSpecies, setPetSpecies] = useState('');
     const [petBreed, setPetBreed] = useState('');
     const [serviceType, setServiceType] = useState('');
+    const [vaccineType, setVaccineType] = useState('');
     const [otherService, setOtherService] = useState('');
     const [vetId, setVetId] = useState('');
     const [reason, setReason] = useState('');
@@ -83,7 +89,7 @@ export default function WalkInModal({ open, onClose, onSuccess }: WalkInModalPro
     const resetForm = () => {
         setIsEmergency(false);
         setOwnerName(''); setOwnerPhone(''); setOwnerEmail('');
-        setPetName(''); setPetSpecies(''); setPetBreed('');
+        setPetName(''); setVaccineType(''); setPetSpecies(''); setPetBreed('');
         setServiceType(''); setOtherService(''); setVetId('');
         setReason(''); setSymptoms([]); setSeverity('');
         setOtherSymptom(''); setStatus('confirmed');
@@ -120,7 +126,9 @@ export default function WalkInModal({ open, onClose, onSuccess }: WalkInModalPro
             pet_name: petName,
             pet_species: petSpecies,
             pet_breed: petBreed || undefined,
-            service_type: serviceType === 'Other' ? otherService : serviceType,
+            service_type: serviceType === 'Vaccine' && vaccineType
+    ? `Vaccine - ${vaccineType}`
+    : serviceType === 'Other' ? otherService : serviceType,
             veterinarian_id: vetId || undefined,
             reason: reason || undefined,
             appointment_date: apptDate,
@@ -226,7 +234,7 @@ export default function WalkInModal({ open, onClose, onSuccess }: WalkInModalPro
     label="Breed"
     value={petBreed}
     options={petSpecies ? (BREEDS_BY_SPECIES[petSpecies] ?? []) : []}
-    onChange={(val: string) => setPetBreed(val)}
+    onChange={(val: string) => { setPetSpecies(val); setPetBreed(''); setVaccineType(''); }}
     error={errors.pet_breed}
     placeholder={petSpecies ? 'Select breed…' : 'Select species first…'}
     required
@@ -275,6 +283,16 @@ export default function WalkInModal({ open, onClose, onSuccess }: WalkInModalPro
                                     className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-200" />
                             </div>
                         </div>
+                        {serviceType === 'Vaccine' && (
+    <div>
+        <label className="block text-xs font-bold text-gray-500 mb-1">Vaccine Type <span className="text-red-400">*</span></label>
+        <select value={vaccineType} onChange={e => setVaccineType(e.target.value)} required
+            className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-200">
+            <option value="">{petSpecies ? 'Select a vaccine…' : 'Select species first…'}</option>
+            {(VACCINE_TYPES[petSpecies] ?? []).map(v => <option key={v} value={v}>{v}</option>)}
+        </select>
+    </div>
+)}
                         {!isEmergency && (
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 mb-1">Initial Status</label>
