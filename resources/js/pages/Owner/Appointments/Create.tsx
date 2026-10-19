@@ -7,6 +7,16 @@ import { petService, veterinarianService, appointmentService } from '@/services'
 import type { Pet, User, AvailabilitySlot } from '@/services';
 import { PageHeader, BackLink, toastSuccess, toastError, C } from '@/pages/Owner/_shared/OwnerUI';
 
+const SERVICES = [
+    'Vaccine', 'Deworming', 'Grooming', 'Bathing', 'Treatment',
+    'Ultrasound', 'ECG', '2D Echo', 'CBC & Blood Chemistry',
+];
+
+const VACCINE_TYPES: Record<string, string[]> = {
+    Dog: ['Ceinl', '5-in-1', '4-in-1', 'Kennel Cough', 'Biocan M', 'Anti-Rabies'],
+    Cat: ['4-in-1', 'Anti-Rabies'],
+};
+
 export default function AppointmentCreate() {
     const [pets, setPets] = useState<Pet[]>([]);
     const [vets, setVets] = useState<User[]>([]);
@@ -26,6 +36,10 @@ export default function AppointmentCreate() {
         pet_id: initialPetId ?? '', veterinarian_id: '', appointment_date: '', appointment_time: '',
         service_type: '', reason: '',
     });
+
+const [vaccineType, setVaccineType] = useState('');
+const selectedPet = pets.find(p => String(p.id) === String(form.pet_id));
+const species = selectedPet?.species ?? '';
 
     useEffect(() => {
         (async () => {
@@ -78,7 +92,9 @@ export default function AppointmentCreate() {
             veterinarian_id: form.veterinarian_id ? Number(form.veterinarian_id) : undefined,
             appointment_date: form.appointment_date,
             appointment_time: form.appointment_time,
-            service_type: form.service_type,
+            service_type: form.service_type === 'Vaccine' && vaccineType
+    ? `Vaccine - ${vaccineType}`
+    : form.service_type,
             reason: form.reason || undefined,
         });
         setSaving(false);
@@ -156,7 +172,7 @@ export default function AppointmentCreate() {
                     <form onSubmit={submit} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
                         <div>
                             <label className="block text-xs font-bold text-gray-500 mb-1.5">Pet <span className="text-red-400">*</span></label>
-                            <select value={form.pet_id} onChange={e => setForm(f => ({ ...f, pet_id: e.target.value }))} required
+                            <select value={form.pet_id} onChange={e => { setForm(f => ({ ...f, pet_id: e.target.value })); setVaccineType(''); }} required
                                 className={`w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 ${errors.pet_id ? 'border-red-300' : 'border-gray-200 focus:ring-sky-200'}`}>
                                 <option value="" disabled>Select a pet…</option>
                                 {pets.map(p => <option key={p.id} value={p.id}>{p.name} ({p.species})</option>)}
@@ -221,22 +237,29 @@ export default function AppointmentCreate() {
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 mb-1.5">Service Type <span className="text-red-400">*</span></label>
-                            <select value={form.service_type} onChange={e => setForm(f => ({ ...f, service_type: e.target.value }))} required
-                                className={`w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 ${errors.service_type ? 'border-red-300' : 'border-gray-200 focus:ring-sky-200'}`}>
-                                <option value="" disabled>Select a service…</option>
-                                <option value="Vaccine">Vaccine</option>
-                                <option value="Surgery">Surgery</option>
-                                <option value="Grooming">Grooming</option>
-                                <option value="Breeding">Breeding</option>
-                                <option value="Bathing">Bathing</option>
-                                <option value="Deworming">Deworming</option>
-                                <option value="Ultrasound">Ultrasound</option>
-                                <option value="ICG">ICG</option>
-                                <option value="2D Echo">2D Echo</option>
-                                <option value="Consultation">Consultation</option>
-                            </select>
-                            {errors.service_type && <p className="text-xs text-red-500 mt-1">{errors.service_type[0]}</p>}
+                            <div>
+    <label className="block text-xs font-bold text-gray-500 mb-1.5">Service Type <span className="text-red-400">*</span></label>
+    <select value={form.service_type} onChange={e => { setForm(f => ({ ...f, service_type: e.target.value })); setVaccineType(''); }} required
+        className={`w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 ${errors.service_type ? 'border-red-300' : 'border-gray-200 focus:ring-sky-200'}`}>
+        <option value="" disabled>Select a service…</option>
+        {SERVICES.map(s => <option key={s} value={s}>{s}</option>)}
+    </select>
+    {errors.service_type && <p className="text-xs text-red-500 mt-1">{errors.service_type[0]}</p>}
+</div>
+
+{form.service_type === 'Vaccine' && (
+    <div>
+        <label className="block text-xs font-bold text-gray-500 mb-1.5">Vaccine Type <span className="text-red-400">*</span></label>
+        <select value={vaccineType} onChange={e => setVaccineType(e.target.value)} required
+            className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-200">
+            <option value="" disabled>{species ? 'Select a vaccine…' : 'Select a pet first…'}</option>
+            {(VACCINE_TYPES[species] ?? []).map(v => <option key={v} value={v}>{v}</option>)}
+        </select>
+        {species && !VACCINE_TYPES[species] && (
+            <p className="text-xs text-gray-400 mt-1">No vaccine types listed for {species}. Please contact the clinic.</p>
+        )}
+    </div>
+)}
                         </div>
                         <div>
                             <label className="block text-xs font-bold text-gray-500 mb-1.5">Reason for Visit</label>
