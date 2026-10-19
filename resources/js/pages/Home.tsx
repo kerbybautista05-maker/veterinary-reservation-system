@@ -6,7 +6,7 @@ import {
     ChevronDown, ChevronRight, ChevronUp, Phone, Mail, MapPin, Stethoscope,
     UserRound, ClipboardCheck, HeartPulse, Home as HomeIcon, Syringe,
     AlertTriangle, Scissors, Sparkles, Utensils, Facebook, Instagram,
-    Scale, Ambulance, Megaphone,
+    Scale, Ambulance, Megaphone, Bug, Bath, ScanLine, Activity, TestTube,
 } from 'lucide-react';
 import { useReveal, useCountUp } from '@/hooks/useReveal';
 import type { Announcement } from '@/services';
@@ -261,43 +261,112 @@ function About() {
 
 // ─── Services ─────────────────────────────────────────────────────────────────
 
-const SERVICES = [
-    { icon: HeartPulse, title: 'Wellness Exams', desc: "Thorough checkups, physical assessments, nutritional counseling, and preventive care plans tailored to your pet's age and breed." },
-    { icon: UserRound, title: 'Surgery', desc: 'Soft tissue, orthopedic, and dental surgical procedures performed with modern equipment and gentle post-operative care protocols.' },
-    { icon: Sparkles, title: 'Dental Care', desc: 'Scaling, polishing, and oral health assessments for fresh breath and healthy gums. Prevent dental disease before it starts.' },
-    { icon: Syringe, title: 'Vaccinations', desc: 'Core and lifestyle vaccines on a schedule tailored to your pet, protecting against life-threatening preventable diseases.' },
-    { icon: Ambulance, title: 'Emergency Care', desc: 'Urgent consultations and stabilization for sudden illness or injury. Our team is ready when your pet needs us most.' },
+type PriceLine = { label: string; price: string };
+type Service = {
+    icon: React.ElementType;
+    title: string;
+    desc: string;
+    price?: string;
+    prices?: PriceLine[];
+};
+
+const SERVICES: Service[] = [
+    {
+        icon: Syringe,
+        title: 'Vaccination',
+        desc: 'Protect your pet from common and deadly diseases with complete, age-appropriate vaccines.',
+        prices: [
+            { label: 'Dog: Ceinl', price: '₱700' },
+            { label: 'Dog: 5-in-1', price: '₱500' },
+            { label: 'Dog: 4-in-1', price: '₱400' },
+            { label: 'Dog: Kennel Cough', price: '₱500' },
+            { label: 'Dog: Biocan M', price: '₱800' },
+            { label: 'Dog: Anti-Rabies', price: '₱300' },
+            { label: 'Cat: 4-in-1', price: '₱900' },
+            { label: 'Cat: Anti-Rabies', price: '₱300' },
+        ],
+    },
+    {
+        icon: Bug,
+        title: 'Deworming',
+        desc: 'Safe and effective deworming to keep your pet free from internal parasites.',
+        prices: [
+            { label: 'Puppy', price: '₱150' },
+            { label: 'Small breed', price: '₱200' },
+            { label: 'Medium breed', price: '₱250' },
+            { label: 'Large breed', price: '₱300' },
+        ],
+    },
+    { icon: Scissors, title: 'Grooming', desc: 'Full grooming to keep your pet clean, neat, and comfortable.', price: '₱600' },
+    { icon: Bath, title: 'Bathing', desc: 'Gentle bath with pet-safe products for a fresh and healthy coat.', price: '₱300' },
+    { icon: Stethoscope, title: 'Treatment', desc: 'Care and medication for sick or injured pets, guided by our veterinarians.', price: '₱400' },
+    { icon: ScanLine, title: 'Ultrasound', desc: "Non-invasive imaging to check your pet's organs, pregnancy, and other concerns.", price: '₱800' },
+    { icon: Activity, title: 'ECG', desc: 'Heart rhythm test to detect heart problems early.', price: '₱500' },
+    { icon: HeartPulse, title: '2D Echo', desc: "Detailed heart ultrasound to see how your pet's heart is working.", price: '₱3,000' },
+    { icon: TestTube, title: 'CBC & Blood Chemistry', desc: "Blood tests that check your pet's overall health and help diagnose illness.", price: '₱2,200' },
 ];
 
 function Services() {
+    const [openService, setOpenService] = useState<string | null>(null);
+
     return (
         <section id="services" className="py-20 sm:py-28 bg-gray-50">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center mb-14">
                 <Reveal>
                     <SectionKicker icon={Stethoscope} label="What We Offer" />
                     <h2 className="text-3xl sm:text-4xl font-black mt-4" style={{ color: C.navy }}>Thoughtful Care at Every Stage of Life</h2>
-                    <p className="text-gray-500 mt-3 max-w-xl mx-auto">From first vaccines to emergency care — each service delivered with expertise and genuine compassion.</p>
+                    <p className="text-gray-500 mt-3 max-w-xl mx-auto">From first vaccines to advanced diagnostics — each service delivered with expertise and genuine compassion.</p>
                     <GradientDivider />
                 </Reveal>
             </div>
 
             <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-4">
-                {SERVICES.map((s, i) => (
-                    <Reveal key={s.title} delay={i * 80}>
-                        <div className="flex items-start gap-5 bg-white rounded-2xl border border-gray-100 p-6 sm:p-7 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
-                            <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: `${C.blue}15` }}>
-                                <s.icon className="w-6 h-6" style={{ color: C.blue }} />
+                {SERVICES.map((s, i) => {
+                    const isOpen = openService === s.title;
+                    return (
+                        <Reveal key={s.title} delay={(i % 5) * 80}>
+                            <div className="flex items-start gap-5 bg-white rounded-2xl border border-gray-100 p-6 sm:p-7 shadow-sm hover:shadow-md transition-all">
+                                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: `${C.blue}15` }}>
+                                    <s.icon className="w-6 h-6" style={{ color: C.blue }} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="text-lg font-black" style={{ color: C.navy }}>{s.title}</h3>
+                                    <p className="text-gray-500 text-sm mt-1.5 leading-relaxed">{s.desc}</p>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setOpenService(isOpen ? null : s.title)}
+                                        className="inline-flex items-center gap-1 text-sm font-bold mt-3"
+                                        style={{ color: C.blue }}
+                                    >
+                                        {isOpen ? 'Hide Price' : 'Learn More'}
+                                        <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-300 ${isOpen ? 'rotate-90' : ''}`} />
+                                    </button>
+
+                                    <div className="grid transition-all duration-300 ease-out" style={{ gridTemplateRows: isOpen ? '1fr' : '0fr' }}>
+                                        <div className="overflow-hidden">
+                                            <div className="mt-3 pt-3 border-t border-gray-100">
+                                                {s.price && (
+                                                    <p className="text-sm font-black" style={{ color: C.blue }}>{s.price}</p>
+                                                )}
+                                                {s.prices && (
+                                                    <ul className="grid sm:grid-cols-2 gap-x-8 gap-y-1.5 text-sm text-gray-600">
+                                                        {s.prices.map(p => (
+                                                            <li key={p.label} className="flex justify-between gap-3">
+                                                                <span>{p.label}</span>
+                                                                <span className="font-black" style={{ color: C.blue }}>{p.price}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <h3 className="text-lg font-black" style={{ color: C.navy }}>{s.title}</h3>
-                                <p className="text-gray-500 text-sm mt-1.5 leading-relaxed">{s.desc}</p>
-                                <a href="#contact" className="inline-flex items-center gap-1 text-sm font-bold mt-3" style={{ color: C.blue }}>
-                                    Learn More <ChevronRight className="w-3.5 h-3.5" />
-                                </a>
-                            </div>
-                        </div>
-                    </Reveal>
-                ))}
+                        </Reveal>
+                    );
+                })}
             </div>
         </section>
     );
@@ -543,7 +612,7 @@ function FindUs() {
 // ─── FAQ ──────────────────────────────────────────────────────────────────────
 
 const FAQS = [
-    { q: 'What services does NEVET offer?', a: 'We offer wellness exams, vaccinations, surgery, dental care, and emergency services — everything your pet needs across every stage of life.' },
+    { q: 'What services does NEVET offer?',   a: 'We offer vaccinations, deworming, grooming, bathing, treatment, ultrasound, ECG, 2D echo, and CBC & blood chemistry.' },
     { q: 'How do I book an appointment?', a: 'Create a free account, add your pet, and book a visit online in minutes. You can choose your preferred date, time, and veterinarian.' },
     { q: 'Do you offer emergency services?', a: "Yes. We accept emergency bookings and prioritize urgent cases. Tap the Emergency button to see critical info and call us directly — no login required." },
     { q: 'How much do consultations cost?', a: 'Consultation fees vary by service type. Our team is happy to give you an estimate before your visit — just contact the clinic.' },
