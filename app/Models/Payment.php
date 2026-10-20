@@ -172,22 +172,27 @@ class Payment extends Model
     }
 
     public static function priceFor(Appointment $appointment): ?float
-    {
-        $service = (string) $appointment->service_type;
-        $cfg     = config('service_prices');
+{
+    $service = trim((string) $appointment->service_type);
+    $cfg     = config('service_prices');
 
-        if (isset($cfg['fixed'][$service])) {
-            return (float) $cfg['fixed'][$service];
-        }
-        if (str_starts_with($service, 'Vaccine - ')) {
-            $variant = substr($service, strlen('Vaccine - '));
-            $species = $appointment->pet?->species;
-            return isset($cfg['vaccine'][$species][$variant]) ? (float) $cfg['vaccine'][$species][$variant] : null;
-        }
-        if (str_starts_with($service, 'Deworming - ')) {
-            $variant = substr($service, strlen('Deworming - '));
-            return isset($cfg['deworming'][$variant]) ? (float) $cfg['deworming'][$variant] : null;
-        }
-        return null;
+    if (isset($cfg['fixed'][$service])) {
+        return (float) $cfg['fixed'][$service];
     }
+
+    if (str_starts_with($service, 'Vaccine - ')) {
+        $variant = trim(substr($service, strlen('Vaccine - ')));
+        $species = ucfirst(strtolower(trim((string) $appointment->pet?->species)));
+        return isset($cfg['vaccine'][$species][$variant])
+            ? (float) $cfg['vaccine'][$species][$variant]
+            : null;
+    }
+
+    if (str_starts_with($service, 'Deworming - ')) {
+        $variant = trim(substr($service, strlen('Deworming - ')));
+        return isset($cfg['deworming'][$variant]) ? (float) $cfg['deworming'][$variant] : null;
+    }
+
+    return null;
+}
 }
