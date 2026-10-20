@@ -4,10 +4,21 @@ import { useEffect, useState, useCallback } from 'react';
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import { appointmentService } from '@/services';
-import type { CalendarResponse } from '@/services';
+import { statusClass } from '@/lib/status';
 import { PageHeader, C } from '@/pages/Owner/_shared/OwnerUI';
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+type AvailabilityItem = {
+    id: number;
+    appointment_date: string;
+    appointment_time: string;
+    status?: string;
+    type?: string;
+    mine: boolean;
+    pet?: { name?: string } | null;
+};
+type AvailabilityResponse = Record<string, AvailabilityItem[]>;
 
 function dateKey(d: Date): string {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -28,7 +39,7 @@ function buildMonthMatrix(year: number, month: number): Date[][] {
 
 export default function OwnerCalendar() {
     const [cursor, setCursor] = useState(new Date());
-    const [data, setData] = useState<CalendarResponse>({});
+    const [data, setData] = useState<AvailabilityResponse>({});
     const [loading, setLoading] = useState(true);
 
     const year = cursor.getFullYear();
@@ -39,8 +50,8 @@ export default function OwnerCalendar() {
         setLoading(true);
         const start = dateKey(weeks[0][0]);
         const end = dateKey(weeks[weeks.length - 1][6]);
-        const res = await appointmentService.getCalendar({ start, end });
-        if (res.success) setData(res.data ?? {});
+        const res = await appointmentService.getAvailability({ start, end });
+        if (res.success) setData((res.data ?? {}) as unknown as AvailabilityResponse);
         setLoading(false);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [year, month]);
@@ -51,7 +62,7 @@ export default function OwnerCalendar() {
         <AppLayout>
             <Head title="Calendar" />
             <div className="min-h-screen" style={{ background: C.bg }}>
-                <PageHeader icon={CalendarDays} title="My Calendar" subtitle="All your upcoming and past visits" onRefresh={fetchData} />
+                <PageHeader icon={CalendarDays} title="My Calendar" subtitle="Check available time slots and your own visits" onRefresh={fetchData} />
 
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -82,13 +93,18 @@ export default function OwnerCalendar() {
                                             {d.getDate()}
                                         </p>
                                         <div className="space-y-0.5">
-                                            {dayAppts.slice(0, 2).map(a => (
+                                            {dayAppts.slice(0, 3).map(a => a.mine ? (
                                                 <Link key={a.id} href={`/owner/appointments/${a.id}`}
-                                                    className={`block text-[10px] font-semibold px-1.5 py-0.5 rounded truncate ${a.type === 'emergency' ? 'bg-red-100 text-red-700' : 'bg-sky-50 text-sky-700'}`}>
+                                                    className={`block text-[10px] font-semibold px-1.5 py-0.5 rounded truncate ${statusClass(a.status)} ${a.type === 'emergency' ? 'border-l-2 border-red-500' : ''}`}>
                                                     {a.appointment_time?.slice(0, 5)} {a.pet?.name}
                                                 </Link>
+                                            ) : (
+                                                <div key={a.id}
+                                                    className="block text-[10px] font-semibold px-1.5 py-0.5 rounded truncate bg-gray-200 text-gray-500">
+                                                    {a.appointment_time?.slice(0, 5)} Not available
+                                                </div>
                                             ))}
-                                            {dayAppts.length > 2 && <p className="text-[10px] text-gray-400 px-1.5">+{dayAppts.length - 2} more</p>}
+                                            {dayAppts.length > 3 && <p className="text-[10px] text-gray-400 px-1.5">+{dayAppts.length - 3} more</p>}
                                         </div>
                                     </div>
                                 );

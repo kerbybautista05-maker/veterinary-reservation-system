@@ -121,6 +121,7 @@ Route::middleware([EnsureFrontendRequestsAreStateful::class, 'auth:sanctum'])->g
     Route::prefix('appointments')->group(function () {
         Route::get('/',                [AppointmentController::class, 'index']);
         Route::get('/calendar',        [AppointmentController::class, 'calendar']);
+        Route::get('/availability', [AppointmentController::class, 'availability']);
         Route::get('/check-slot',      [AppointmentController::class, 'checkSlot']);
         Route::get('/emergency/pending', [AppointmentController::class, 'emergencyPending']);
         Route::post('/',               [AppointmentController::class, 'store']);

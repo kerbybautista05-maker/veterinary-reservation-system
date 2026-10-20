@@ -261,6 +261,65 @@ class AppointmentController extends Controller
         }
     }
 
+        // =========================================================================
+    // availability — owner-safe calendar: all booked slots, but details only
+    // for the owner's own appointments
+    // GET /api/appointments/availability?start=YYYY-MM-DD&end=YYYY-MM-DD
+    // =========================================================================
+
+    public function availability(Request $request)
+    {
+        try {
+            $user = $request->user();
+
+            $validator = Validator::make($request->all(), [
+                'start' => 'required|date',
+                'end'   => 'required|date|after_or_equal:start',
+            ]);
+            if ($validator->fails()) {
+                return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            }
+
+            $appointments = Appointment::with('pet')
+                ->whereBetween('appointment_date', [$request->input('start'), $request->input('end')])
+                ->whereIn('status', Appointment::ACTIVE_STATUSES)
+                ->orderBy('appointment_date')
+                ->orderBy('appointment_time')
+                ->get();
+
+            $grouped = $appointments
+                ->map(function ($a) use ($user) {
+                    // Sariling appointment: buong detalye
+                    if ($a->owner_id === $user->id) {
+                        return [
+                            'id'               => $a->id,
+                            'appointment_date' => $a->appointment_date->toDateString(),
+                            'appointment_time' => $a->appointment_time,
+                            'status'           => $a->status,
+                            'type'             => $a->type,
+                            'mine'             => true,
+                            'pet'              => ['name' => $a->pet?->name],
+                        ];
+                    }
+
+                    // Sa iba: oras at petsa lang
+                    return [
+                        'id'               => $a->id,
+                        'appointment_date' => $a->appointment_date->toDateString(),
+                        'appointment_time' => $a->appointment_time,
+                        'mine'             => false,
+                    ];
+                })
+                ->groupBy('appointment_date');
+
+            return response()->json(['success' => true, 'data' => $grouped]);
+
+        } catch (\Exception $e) {
+            Log::error('Error fetching availability: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to retrieve availability'], 500);
+        }
+    }
+
     // =========================================================================
     // store — book an appointment (Pet Owner), including emergency bookings
     // =========================================================================

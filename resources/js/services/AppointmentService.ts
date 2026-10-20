@@ -68,6 +68,13 @@ class AppointmentService extends BaseService {
         return this.get<CalendarResponse>('/api/appointments/calendar', params as Record<string, unknown>);
     }
 
+    
+    /** GET /api/appointments/availability */
+    async getAvailability(params: AppointmentCalendarParams): Promise<ApiResponse<any>> {
+        return this.get<any>('/api/appointments/availability', params as Record<string, unknown>);
+    }
+
+
     /** GET /api/appointments/{id} */
     async getAppointment(id: number): Promise<ApiResponse<Appointment>> {
         return this.get<Appointment>(`/api/appointments/${id}`);
