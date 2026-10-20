@@ -160,12 +160,12 @@ Route::middleware([EnsureFrontendRequestsAreStateful::class, 'auth:sanctum'])->g
     Route::prefix('payments')->group(function () {
         Route::get('/',              [PaymentController::class, 'index']);
         Route::post('/',             [PaymentController::class, 'store']);
+        Route::get('/quote/{appointmentId}', [PaymentController::class, 'quote']);
         Route::get('/{id}',          [PaymentController::class, 'show']);
         Route::get('/{id}/receipt',  [PaymentController::class, 'receipt']);
         Route::post('/{id}/mark-paid',   [PaymentController::class, 'markPaid']);
         Route::post('/{id}/mark-failed', [PaymentController::class, 'markFailed']);
         Route::post('/{id}/refund',      [PaymentController::class, 'refund']);
-        Route::get('/payments/quote/{appointmentId}', [PaymentController::class, 'quote']);
     });
 
     // ── LIVE CHAT ────────────────────────────────────────────────────────
