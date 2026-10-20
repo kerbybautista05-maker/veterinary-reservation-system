@@ -13,7 +13,7 @@ const BREEDS_BY_SPECIES: Record<string, string[]> = {
 
 const SERVICES = [
     'Vaccine', 'Deworming', 'Grooming', 'Bathing', 'Treatment',
-    'Ultrasound', 'ECG', '2D Echo', 'CBC & Blood Chemistry', 'Other',
+    'Ultrasound', 'ECG', '2D Echo', 'CBC & Blood Chemistry',
 ];
 
 const VACCINE_TYPES: Record<string, string[]> = {

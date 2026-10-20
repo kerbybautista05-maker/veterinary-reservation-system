@@ -165,6 +165,7 @@ Route::middleware([EnsureFrontendRequestsAreStateful::class, 'auth:sanctum'])->g
         Route::post('/{id}/mark-paid',   [PaymentController::class, 'markPaid']);
         Route::post('/{id}/mark-failed', [PaymentController::class, 'markFailed']);
         Route::post('/{id}/refund',      [PaymentController::class, 'refund']);
+        Route::get('/payments/quote/{appointmentId}', [PaymentController::class, 'quote']);
     });
 
     // ── LIVE CHAT ────────────────────────────────────────────────────────

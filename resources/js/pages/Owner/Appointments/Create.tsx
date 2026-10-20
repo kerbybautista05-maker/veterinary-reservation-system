@@ -17,6 +17,8 @@ const VACCINE_TYPES: Record<string, string[]> = {
     Cat: ['4-in-1', 'Anti-Rabies'],
 };
 
+const DEWORMING_TYPES = ['Puppy', 'Small breed', 'Medium breed', 'Large breed'];
+
 export default function AppointmentCreate() {
     const [pets, setPets] = useState<Pet[]>([]);
     const [vets, setVets] = useState<User[]>([]);
@@ -38,6 +40,7 @@ export default function AppointmentCreate() {
     });
 
 const [vaccineType, setVaccineType] = useState('');
+const [dewormType, setDewormType] = useState('');
 const selectedPet = pets.find(p => String(p.id) === String(form.pet_id));
 const species = selectedPet?.species ?? '';
 
@@ -92,9 +95,10 @@ const species = selectedPet?.species ?? '';
             veterinarian_id: form.veterinarian_id ? Number(form.veterinarian_id) : undefined,
             appointment_date: form.appointment_date,
             appointment_time: form.appointment_time,
-            service_type: form.service_type === 'Vaccine' && vaccineType
-    ? `Vaccine - ${vaccineType}`
-    : form.service_type,
+                        service_type:
+                form.service_type === 'Vaccine' && vaccineType ? `Vaccine - ${vaccineType}`
+                : form.service_type === 'Deworming' && dewormType ? `Deworming - ${dewormType}`
+                : form.service_type,
             reason: form.reason || undefined,
         });
         setSaving(false);
@@ -239,7 +243,7 @@ const species = selectedPet?.species ?? '';
                         <div>
                             <div>
     <label className="block text-xs font-bold text-gray-500 mb-1.5">Service Type <span className="text-red-400">*</span></label>
-    <select value={form.service_type} onChange={e => { setForm(f => ({ ...f, service_type: e.target.value })); setVaccineType(''); }} required
+    <select value={form.service_type} onChange={e => { setForm(f => ({ ...f, service_type: e.target.value })); setVaccineType(''); setDewormType(''); }} required
         className={`w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 ${errors.service_type ? 'border-red-300' : 'border-gray-200 focus:ring-sky-200'}`}>
         <option value="" disabled>Select a service…</option>
         {SERVICES.map(s => <option key={s} value={s}>{s}</option>)}
@@ -258,6 +262,16 @@ const species = selectedPet?.species ?? '';
         {species && !VACCINE_TYPES[species] && (
             <p className="text-xs text-gray-400 mt-1">No vaccine types listed for {species}. Please contact the clinic.</p>
         )}
+    </div>
+)}
+{form.service_type === 'Deworming' && (
+    <div>
+        <label className="block text-xs font-bold text-gray-500 mb-1.5">Deworming Type <span className="text-red-400">*</span></label>
+        <select value={dewormType} onChange={e => setDewormType(e.target.value)} required
+            className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-200">
+            <option value="" disabled>Select a type…</option>
+            {DEWORMING_TYPES.map(d => <option key={d} value={d}>{d}</option>)}
+        </select>
     </div>
 )}
                         </div>

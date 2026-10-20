@@ -7,9 +7,9 @@ import { appointmentService, paymentService } from '@/services';
 import type { Appointment, PaymentMethod } from '@/services';
 import { PageHeader, BackLink, toastSuccess, toastError, C } from '@/pages/Owner/_shared/OwnerUI';
 import { formatPHDate } from '@/pages/Shared/helpers';
+import { csrfGet } from '@/utils/csrfFetch';
 
 const METHODS: { value: PaymentMethod; label: string }[] = [
-    { value: 'cash', label: 'Cash (pay at clinic)' },
     { value: 'gcash', label: 'GCash' },
     { value: 'paymaya', label: 'PayMaya' },
     { value: 'bank_transfer', label: 'Bank Transfer' },
@@ -20,8 +20,9 @@ export default function PaymentCreate() {
 
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [appointmentId, setAppointmentId] = useState(initialApptId ?? '');
-    const [amount, setAmount] = useState('');
-    const [method, setMethod] = useState<PaymentMethod>('cash');
+    const [amount, setAmount] = useState<number | null>(null);
+    const [priceError, setPriceError] = useState<string | null>(null);
+    const [method, setMethod] = useState<PaymentMethod>('gcash');
     const [reference, setReference] = useState('');
     const [notes, setNotes] = useState('');
     const [receipt, setReceipt] = useState<File | null>(null);
@@ -32,27 +33,32 @@ export default function PaymentCreate() {
 
     useEffect(() => {
         (async () => {
-            // Completed and confirmed visits are both billable — a pet owner
-            // may want to pay ahead of a confirmed appointment too.
             const [completed, confirmed] = await Promise.all([
                 appointmentService.getAppointments({ status: 'completed', per_page: 30 }),
                 appointmentService.getAppointments({ status: 'confirmed', per_page: 30 }),
             ]);
-            const combined = [...(completed.data ?? []), ...(confirmed.data ?? [])];
-            setAppointments(combined);
+            setAppointments([...(completed.data ?? []), ...(confirmed.data ?? [])]);
         })();
     }, []);
 
-    const selected = appointments.find(a => a.id === Number(appointmentId));
-    const isOnlinePayment = method !== 'cash';
+    // Fetch the price from the server whenever the appointment changes
+    useEffect(() => {
+        setAmount(null);
+        setPriceError(null);
+        if (!appointmentId) return;
+        (async () => {
+            try {
+                const res = await csrfGet(`/api/payments/quote/${appointmentId}`);
+                const json = await res.json();
+                if (json.success && json.data?.amount != null) setAmount(Number(json.data.amount));
+                else setPriceError('No price is set for this service. Please contact the clinic.');
+            } catch {
+                setPriceError('Could not load the price. Please try again.');
+            }
+        })();
+    }, [appointmentId]);
 
-    const onMethodChange = (m: PaymentMethod) => {
-        setMethod(m);
-        if (m === 'cash') {
-            setReceipt(null);
-            setPreview(null);
-        }
-    };
+    const selected = appointments.find(a => a.id === Number(appointmentId));
 
     const onPickReceipt = (file?: File) => {
         if (!file) return;
@@ -65,29 +71,19 @@ export default function PaymentCreate() {
         setSaving(true);
         setErrors({});
 
-        if (!appointmentId) {
-            setErrors({ appointment_id: ['Please select an appointment.'] });
+        const clientErrors: Record<string, string[]> = {};
+        if (!appointmentId) clientErrors.appointment_id = ['Please select an appointment.'];
+        if (amount == null) clientErrors.amount = [priceError ?? 'Amount is not available.'];
+        if (!receipt) clientErrors.receipt = ['Receipt / proof of payment is required.'];
+        if (Object.keys(clientErrors).length > 0) {
+            setErrors(clientErrors);
             setSaving(false);
             return;
-        }
-        if (!amount || Number(amount) <= 0) {
-            setErrors({ amount: ['Enter a valid amount.'] });
-            setSaving(false);
-            return;
-        }
-        if (method !== 'cash') {
-            const clientErrors: Record<string, string[]> = {};
-            if (!receipt) clientErrors.receipt = ['Receipt / proof of payment is required for online payments.'];
-            if (Object.keys(clientErrors).length > 0) {
-                setErrors(clientErrors);
-                setSaving(false);
-                return;
-            }
         }
 
         const res = await paymentService.createPayment({
             appointment_id: Number(appointmentId),
-            amount: Number(amount),
+            amount: amount as number, // server recomputes the real price; this is ignored
             currency: 'PHP',
             payment_method: method,
             payment_reference: reference || undefined,
@@ -114,8 +110,8 @@ export default function PaymentCreate() {
                     <BackLink href="/owner/payments" label="Back to Payments" />
 
                     <div className="mb-4 px-4 py-3 rounded-xl border border-blue-100 bg-blue-50 text-sm text-blue-800">
-                        This records that you've paid — the clinic will review and confirm it. If you're paying in cash
-                        at the clinic, you can still log it here so it shows up in your payment history right away.
+                        Pay the exact amount shown using GCash, PayMaya, or Bank Transfer, then upload your proof of payment.
+                        The clinic will review and confirm it.
                     </div>
 
                     <form onSubmit={submit} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
@@ -141,18 +137,20 @@ export default function PaymentCreate() {
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 mb-1.5">Amount (₱)</label>
-                            <input type="number" min="0" step="0.01" value={amount} onChange={e => setAmount(e.target.value)} required
-                                placeholder="0.00"
-                                className={`w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 ${errors.amount ? 'border-red-300' : 'border-gray-200 focus:ring-sky-200'}`} />
-                            {errors.amount && <p className="text-xs text-red-500 mt-1">{errors.amount[0]}</p>}
+                            <label className="block text-xs font-bold text-gray-500 mb-1.5">Amount to Pay (₱)</label>
+                            <input type="text" readOnly
+                                value={amount != null ? amount.toLocaleString('en-PH', { minimumFractionDigits: 2 }) : ''}
+                                placeholder={appointmentId ? 'Loading…' : 'Select an appointment first'}
+                                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm font-bold text-gray-700 cursor-not-allowed" />
+                            {priceError && <p className="text-xs text-red-500 mt-1">{priceError}</p>}
+                            {errors.amount && !priceError && <p className="text-xs text-red-500 mt-1">{errors.amount[0]}</p>}
                         </div>
 
                         <div>
                             <label className="block text-xs font-bold text-gray-500 mb-1.5">Payment Method</label>
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                                 {METHODS.map(m => (
-                                    <button type="button" key={m.value} onClick={() => onMethodChange(m.value)}
+                                    <button type="button" key={m.value} onClick={() => setMethod(m.value)}
                                         className={`px-3 py-2.5 rounded-xl text-xs font-bold border transition-colors text-left ${
                                             method === m.value ? 'text-white border-transparent' : 'bg-white text-gray-600 border-gray-200 hover:border-sky-300'
                                         }`}
@@ -176,7 +174,7 @@ export default function PaymentCreate() {
 
                         <div>
                             <label className="block text-xs font-bold text-gray-500 mb-1.5">
-                                Receipt / Proof of Payment {isOnlinePayment ? <span className="text-red-400">*</span> : <span className="text-gray-300 font-medium">(optional)</span>}
+                                Receipt / Proof of Payment <span className="text-red-400">*</span>
                             </label>
                             {preview ? (
                                 <div className="relative w-full h-40 rounded-xl overflow-hidden border border-gray-200">
@@ -200,7 +198,7 @@ export default function PaymentCreate() {
                                 className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-200" />
                         </div>
 
-                        <button type="submit" disabled={saving}
+                        <button type="submit" disabled={saving || amount == null}
                             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-bold disabled:opacity-50" style={{ background: C.sky }}>
                             <Save className="w-4 h-4" /> {saving ? 'Submitting…' : 'Submit Payment'}
                         </button>

@@ -84,14 +84,12 @@ class PaymentController extends Controller
                 return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
             }
 
-            $validator = Validator::make($request->all(), [
-                'appointment_id'  => 'required|exists:appointments,id',
-                'amount'          => 'required|numeric|min:0',
-                'currency'        => 'nullable|string|max:10',
-                'payment_method'  => 'required|in:' . implode(',', Payment::METHODS),
+                        $validator = Validator::make($request->all(), [
+                'appointment_id'    => 'required|exists:appointments,id',
+                'payment_method'    => 'required|in:gcash,paymaya,bank_transfer',
                 'payment_reference' => 'nullable|string|max:150',
-                'receipt'         => 'required_unless:payment_method,cash|nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
-                'notes'           => 'nullable|string',
+                'receipt'           => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
+                'notes'             => 'nullable|string',
             ]);
 
             if ($validator->fails()) {
@@ -103,12 +101,23 @@ class PaymentController extends Controller
                 return response()->json(['success' => false, 'message' => 'You may only pay for your own appointments.'], 403);
             }
 
+            $price = Payment::priceFor($appointment->loadMissing('pet'));
+            if ($price === null) {
+                return response()->json(['success' => false, 'message' => 'No price is set for this service. Please contact the clinic.'], 422);
+            }
+            if (Payment::where('appointment_id', $appointment->id)->whereIn('status', ['pending', 'paid'])->exists()) {
+                return response()->json(['success' => false, 'message' => 'A payment for this appointment already exists.'], 422);
+            }
+
             $data = $validator->validated();
             if ($request->hasFile('receipt')) {
                 // Store the proof of payment on a private disk; it is served
                 // back only through the authorized receipt endpoint.
                 $data['receipt_path'] = $request->file('receipt')->store('payments', 's3_private');
             }
+            $data['amount']   = $price;
+            $data['currency'] = 'PHP';
+
             unset($data['receipt']);
 
             $data['appointment_id'] = $appointment->id;
@@ -136,6 +145,15 @@ class PaymentController extends Controller
     // =========================================================================
     // show
     // =========================================================================
+        public function quote(Request $request, $appointmentId)
+    {
+        $appointment = Appointment::with('pet')->findOrFail($appointmentId);
+        if (!$request->user()->isAdmin() && $appointment->owner_id !== $request->user()->id) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+        }
+        $price = Payment::priceFor($appointment);
+        return response()->json(['success' => true, 'data' => ['amount' => $price]]);
+    }
 
     public function show(Request $request, $id)
     {
