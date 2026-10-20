@@ -9,6 +9,19 @@ import { PageHeader, C } from './_shared/AdminUI';
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+const STATUS_STYLES: Record<string, string> = {
+    pending:   'bg-amber-100 text-amber-700',
+    approved:  'bg-green-100 text-green-700',
+    confirmed: 'bg-green-100 text-green-700',
+    cancelled: 'bg-red-100 text-red-700',
+    canceled:  'bg-red-100 text-red-700',
+    completed: 'bg-blue-100 text-blue-700',
+};
+
+function statusClass(status?: string): string {
+    return STATUS_STYLES[status?.toLowerCase() ?? ''] ?? 'bg-gray-100 text-gray-700';
+}
+
 function dateKey(d: Date): string {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
@@ -84,7 +97,7 @@ export default function AdminCalendar() {
                                         <div className="space-y-0.5">
                                             {dayAppts.slice(0, 3).map(a => (
                                                 <Link key={a.id} href={`/admin/appointments/${a.id}`}
-                                                    className={`block text-[10px] font-semibold px-1.5 py-0.5 rounded truncate ${a.type === 'emergency' ? 'bg-red-100 text-red-700' : 'bg-rose-50 text-rose-700'}`}>
+                                                    className={`block text-[10px] font-semibold px-1.5 py-0.5 rounded truncate ${statusClass(a.status)} ${a.type === 'emergency' ? 'border-l-2 border-red-500' : ''}`}>
                                                     {a.appointment_time?.slice(0, 5)} {a.pet?.name}
                                                 </Link>
                                             ))}
