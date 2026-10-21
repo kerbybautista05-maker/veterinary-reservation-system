@@ -10,6 +10,7 @@ import { formatPHDate } from '@/pages/Shared/helpers';
 import { csrfGet } from '@/utils/csrfFetch';
 
 const METHODS: { value: PaymentMethod; label: string }[] = [
+    { value: 'cash', label: 'Cash (pay at clinic)' },
     { value: 'gcash', label: 'GCash' },
     { value: 'paymaya', label: 'PayMaya' },
     { value: 'bank_transfer', label: 'Bank Transfer' },
@@ -22,7 +23,13 @@ export default function PaymentCreate() {
     const [appointmentId, setAppointmentId] = useState(initialApptId ?? '');
     const [amount, setAmount] = useState<number | null>(null);
     const [priceError, setPriceError] = useState<string | null>(null);
-    const [method, setMethod] = useState<PaymentMethod>('gcash');
+    const [method, setMethod] = useState<PaymentMethod>('cash');
+const isOnline = method !== 'cash';
+
+const onMethodChange = (m: PaymentMethod) => {
+    setMethod(m);
+    if (m === 'cash') { setReceipt(null); setPreview(null); setReference(''); }
+};
     const [reference, setReference] = useState('');
     const [notes, setNotes] = useState('');
     const [receipt, setReceipt] = useState<File | null>(null);
@@ -74,7 +81,8 @@ export default function PaymentCreate() {
         const clientErrors: Record<string, string[]> = {};
         if (!appointmentId) clientErrors.appointment_id = ['Please select an appointment.'];
         if (amount == null) clientErrors.amount = [priceError ?? 'Amount is not available.'];
-        if (!receipt) clientErrors.receipt = ['Receipt / proof of payment is required.'];
+        if (isOnline && !reference.trim()) clientErrors.payment_reference = ['Payment reference is required.'];
+        if (isOnline && !receipt) clientErrors.receipt = ['Receipt / proof of payment is required.'];
         if (Object.keys(clientErrors).length > 0) {
             setErrors(clientErrors);
             setSaving(false);
@@ -111,7 +119,7 @@ export default function PaymentCreate() {
 
                     <div className="mb-4 px-4 py-3 rounded-xl border border-blue-100 bg-blue-50 text-sm text-blue-800">
                         Pay the exact amount shown using GCash, PayMaya, or Bank Transfer, then upload your proof of payment.
-                        The clinic will review and confirm it.
+If you prefer to pay in cash at the clinic, choose "Cash" to log it; the clinic will confirm it when you pay.
                     </div>
 
                     <form onSubmit={submit} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
@@ -150,7 +158,7 @@ export default function PaymentCreate() {
                             <label className="block text-xs font-bold text-gray-500 mb-1.5">Payment Method</label>
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                                 {METHODS.map(m => (
-                                    <button type="button" key={m.value} onClick={() => setMethod(m.value)}
+                                    <button type="button" key={m.value} onClick={() => onMethodChange(m.value)}
                                         className={`px-3 py-2.5 rounded-xl text-xs font-bold border transition-colors text-left ${
                                             method === m.value ? 'text-white border-transparent' : 'bg-white text-gray-600 border-gray-200 hover:border-sky-300'
                                         }`}
@@ -163,7 +171,7 @@ export default function PaymentCreate() {
 
                         <div>
                             <label className="block text-xs font-bold text-gray-500 mb-1.5">
-                                Payment Reference <span className="text-gray-300 font-medium">(optional)</span>
+                                Payment Reference {isOnline ? <span className="text-red-400">*</span> : <span className="text-gray-300 font-medium">(not needed for cash)</span>}
                             </label>
                             <input value={reference} onChange={e => setReference(e.target.value)}
                                 placeholder="Enter reference number"
@@ -174,7 +182,7 @@ export default function PaymentCreate() {
 
                         <div>
                             <label className="block text-xs font-bold text-gray-500 mb-1.5">
-                                Receipt / Proof of Payment <span className="text-red-400">*</span>
+                                Receipt / Proof of Payment {isOnline ? <span className="text-red-400">*</span> : <span className="text-gray-300 font-medium">(optional)</span>}
                             </label>
                             {preview ? (
                                 <div className="relative w-full h-40 rounded-xl overflow-hidden border border-gray-200">

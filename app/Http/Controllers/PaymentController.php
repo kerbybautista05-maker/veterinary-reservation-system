@@ -84,13 +84,13 @@ class PaymentController extends Controller
                 return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
             }
 
-                        $validator = Validator::make($request->all(), [
-                'appointment_id'    => 'required|exists:appointments,id',
-                'payment_method'    => 'required|in:gcash,paymaya,bank_transfer',
-                'payment_reference' => 'nullable|string|max:150',
-                'receipt'           => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
-                'notes'             => 'nullable|string',
-            ]);
+            $validator = Validator::make($request->all(), [
+    'appointment_id'    => 'required|exists:appointments,id',
+    'payment_method'    => 'required|in:' . implode(',', Payment::METHODS),
+    'payment_reference' => 'required_unless:payment_method,cash|nullable|string|max:150',
+    'receipt'           => 'required_unless:payment_method,cash|nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+    'notes'             => 'nullable|string',
+]);
 
             if ($validator->fails()) {
                 return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
