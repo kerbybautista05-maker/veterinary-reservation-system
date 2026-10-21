@@ -27,6 +27,10 @@ export default function AdminNotificationDetail({ notificationId }: { notificati
     if (loading) return <AppLayout><Head title="Notification" /><div className="p-10 text-center text-sm text-gray-400">Loading…</div></AppLayout>;
     if (!notification) return <AppLayout><Head title="Notification" /><div className="p-10 text-center text-sm text-gray-400">Notification not found.</div></AppLayout>;
 
+const link = notification.deep_link?.startsWith('/chat/')
+    ? `/admin${notification.deep_link}`
+    : notification.deep_link;
+
     return (
         <AppLayout>
             <Head title={notification.title} />
@@ -42,11 +46,11 @@ export default function AdminNotificationDetail({ notificationId }: { notificati
                         <p className="text-sm text-gray-600 mt-3 leading-relaxed">{notification.message}</p>
                         <p className="text-xs text-gray-400 mt-4">{formatPHDateTime(notification.created_at)}</p>
 
-                        {notification.deep_link && (
-                            <Link href={notification.deep_link} className="inline-flex items-center gap-1.5 mt-5 px-4 py-2.5 rounded-xl text-white text-sm font-bold" style={{ background: C.rose }}>
-                                View Details <ArrowRight className="w-4 h-4" />
-                            </Link>
-                        )}
+                        {link && (
+    <Link href={link} className="inline-flex items-center gap-1.5 mt-5 px-4 py-2.5 rounded-xl text-white text-sm font-bold" style={{ background: C.sky }}>
+        View Details <ArrowRight className="w-4 h-4" />
+    </Link>
+)}
                     </div>
                 </div>
             </div>

@@ -105,16 +105,20 @@ class ChatMessageController extends Controller
             }
 
             $recipient = $user->id === $conversation->owner_id ? $conversation->admin : $conversation->owner;
-            if ($recipient) {
-                Notification::notify(
-                    $recipient,
-                    'New Chat Message',
-                    $message->message ? mb_substr($message->message, 0, 100) : 'Sent an attachment.',
-                    Notification::TYPE_GENERAL,
-                    Notification::CHANNEL_APP,
-                    "/chat/{$conversation->id}"
-                );
-            }
+if ($recipient) {
+    $link = $recipient->isAdmin()
+        ? "/admin/chat/{$conversation->id}"
+        : "/owner/chat/{$conversation->id}";
+
+    Notification::notify(
+        $recipient,
+        'New Chat Message',
+        $message->message ? mb_substr($message->message, 0, 100) : 'Sent an attachment.',
+        Notification::TYPE_GENERAL,
+        Notification::CHANNEL_APP,
+        $link
+    );
+}
 
             return response()->json([
                 'success' => true,
