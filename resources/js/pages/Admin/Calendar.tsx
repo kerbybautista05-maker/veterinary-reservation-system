@@ -43,6 +43,7 @@ export default function AdminCalendar() {
     const [cursor, setCursor] = useState(new Date());
     const [data, setData] = useState<CalendarResponse>({});
     const [loading, setLoading] = useState(true);
+    const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
     const year = cursor.getFullYear();
     const month = cursor.getMonth();
@@ -101,7 +102,14 @@ export default function AdminCalendar() {
                                                     {a.appointment_time?.slice(0, 5)} {a.pet?.name}
                                                 </Link>
                                             ))}
-                                            {dayAppts.length > 3 && <p className="text-[10px] text-gray-400 px-1.5">+{dayAppts.length - 3} more</p>}
+                                            {dayAppts.length > 3 && (
+    <button
+        type="button"
+        onClick={() => setSelectedDay(key)}
+        className="text-[10px] font-semibold text-gray-500 hover:text-gray-800 hover:underline px-1.5">
+        +{dayAppts.length - 3} more
+    </button>
+)}
                                         </div>
                                     </div>
                                 );
@@ -111,6 +119,28 @@ export default function AdminCalendar() {
                     </div>
                 </div>
             </div>
+            {selectedDay && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+         onClick={() => setSelectedDay(null)}>
+        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[80vh] overflow-y-auto"
+             onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 sticky top-0 bg-white">
+                <p className="text-sm font-black text-gray-800">
+                    {new Date(selectedDay + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                </p>
+                <button onClick={() => setSelectedDay(null)} className="text-gray-400 hover:text-gray-700 text-lg leading-none">×</button>
+            </div>
+            <div className="p-4 space-y-1.5">
+                {(data[selectedDay] ?? []).map(a => (
+                    <Link key={a.id} href={`/admin/appointments/${a.id}`}
+                        className={`block text-xs font-semibold px-3 py-2 rounded-lg ${statusClass(a.status)} ${a.type === 'emergency' ? 'border-l-4 border-red-500' : ''}`}>
+                        {a.appointment_time?.slice(0, 5)} · {a.pet?.name}
+                    </Link>
+                ))}
+            </div>
+        </div>
+    </div>
+)}
         </AppLayout>
     );
 }
