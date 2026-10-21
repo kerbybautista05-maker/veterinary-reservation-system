@@ -415,18 +415,48 @@ function VisitProcess() {
 
 // ─── Testimonials ─────────────────────────────────────────────────────────────
 
-const TESTIMONIALS = [
-    { name: 'Maria Santos', pet: 'Coco (Shih Tzu)', rating: 5, quote: 'The staff are so caring and gentle with my Shih Tzu. The clinic is clean and highly recommended to all pet owners in Cabanatuan!' },
-    { name: 'Jose Reyes', pet: 'Mochi (Persian Cat)', rating: 5, quote: 'Brought our cat for surgery and we were so anxious, but the team was professional and reassuring throughout. Recovered perfectly!' },
-    { name: 'Ana Cruz', pet: 'Bruno (Golden Retriever)', rating: 4, quote: 'Very affordable consultation fees with excellent quality of service. Our Golden always leaves happy. Thank you NEVET!' },
-    { name: 'Carlo Mendoza', pet: 'Bella (Aspin)', rating: 5, quote: 'Vaccination and deworming done smoothly. The vet explained everything clearly. Will definitely keep coming back!' },
-    { name: 'Liza Domingo', pet: 'Kira (Pomeranian)', rating: 5, quote: 'Emergency visit for our Pom and they handled it so quickly and calmly. So grateful for this clinic and their team.' },
-];
+// ─── Testimonials ─────────────────────────────────────────────────────────────
+
+type Testimonial = {
+    id: number;
+    name: string;
+    pet?: string | null;
+    rating: number;
+    quote: string;
+    response?: string | null;
+};
 
 function Testimonials() {
     const scrollerRef = useRef<HTMLDivElement>(null);
+    const [items, setItems] = useState<Testimonial[]>([]);
+
+    useEffect(() => {
+        let cancelled = false;
+        fetch('/api/public/feedback', { headers: { Accept: 'application/json' } })
+            .then(r => (r.ok ? r.json() : null))
+            .then(res => {
+                if (cancelled || !res?.success || !Array.isArray(res.data)) return;
+                setItems(
+                    res.data
+                        .filter((f: any) => f.comment)
+                        .map((f: any) => ({
+                            id: f.id,
+                            name: f.name,
+                            pet: f.pet,
+                            rating: f.rating,
+                            quote: f.comment,
+                            response: f.admin_response,
+                        })),
+                );
+            })
+            .catch(() => { /* walang ipapakita kapag nag-error */ });
+        return () => { cancelled = true; };
+    }, []);
 
     const scrollBy = (dx: number) => scrollerRef.current?.scrollBy({ left: dx, behavior: 'smooth' });
+
+    // Walang published na feedback: itago ang buong section
+    if (items.length === 0) return null;
 
     return (
         <section className="py-20 sm:py-28 bg-white overflow-hidden">
@@ -440,8 +470,8 @@ function Testimonials() {
 
             <Reveal>
                 <div ref={scrollerRef} className="flex gap-5 overflow-x-auto px-4 sm:px-6 pb-4 snap-x snap-mandatory scrollbar-hide">
-                    {TESTIMONIALS.map(t => (
-                        <div key={t.name} className="snap-start shrink-0 w-[280px] sm:w-[320px] bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                    {items.map(t => (
+                        <div key={t.id} className="snap-start shrink-0 w-[280px] sm:w-[320px] bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
                             <div className="flex text-amber-400 mb-3">
                                 {Array.from({ length: 5 }).map((_, i) => (
                                     <Star key={i} className="w-4 h-4" fill={i < t.rating ? 'currentColor' : 'none'} strokeWidth={i < t.rating ? 0 : 1.5} />
@@ -450,22 +480,30 @@ function Testimonials() {
                             <p className="text-gray-600 text-sm italic leading-relaxed mb-5">"{t.quote}"</p>
                             <div className="flex items-center gap-3">
                                 <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-black shrink-0" style={{ background: C.blue }}>
-                                    {t.name[0]}
+                                    {t.name?.[0] ?? 'P'}
                                 </div>
                                 <div>
                                     <p className="text-sm font-bold text-gray-800">{t.name}</p>
-                                    <p className="text-xs text-gray-400">Owner of {t.pet}</p>
+                                    {t.pet && <p className="text-xs text-gray-400">Owner of {t.pet}</p>}
                                 </div>
                             </div>
+                            {t.response && (
+                                <div className="mt-4 pt-3 border-t border-gray-100">
+                                    <p className="text-[10px] font-black uppercase tracking-wide" style={{ color: C.blue }}>Clinic response</p>
+                                    <p className="text-xs text-gray-500 mt-1 leading-relaxed">{t.response}</p>
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>
             </Reveal>
 
-            <div className="flex justify-center gap-2 mt-4">
-                <button onClick={() => scrollBy(-340)} className="p-2 rounded-full border border-gray-200 text-gray-400 hover:bg-gray-50 rotate-180"><ChevronRight className="w-4 h-4" /></button>
-                <button onClick={() => scrollBy(340)} className="p-2 rounded-full border border-gray-200 text-gray-400 hover:bg-gray-50"><ChevronRight className="w-4 h-4" /></button>
-            </div>
+            {items.length > 1 && (
+                <div className="flex justify-center gap-2 mt-4">
+                    <button onClick={() => scrollBy(-340)} className="p-2 rounded-full border border-gray-200 text-gray-400 hover:bg-gray-50 rotate-180"><ChevronRight className="w-4 h-4" /></button>
+                    <button onClick={() => scrollBy(340)} className="p-2 rounded-full border border-gray-200 text-gray-400 hover:bg-gray-50"><ChevronRight className="w-4 h-4" /></button>
+                </div>
+            )}
 
             <style>{`.scrollbar-hide::-webkit-scrollbar{display:none} .scrollbar-hide{-ms-overflow-style:none;scrollbar-width:none}`}</style>
         </section>

@@ -60,6 +60,28 @@ Route::get('/public/veterinarians', function () {
     ]);
 });
 
+// Published feedback — for the landing page testimonials
+// Published feedback — for the landing page testimonials
+Route::get('/public/feedback', function () {
+    return response()->json([
+        'success' => true,
+        'data' => \App\Models\Feedback::published()
+            ->with(['owner', 'appointment.pet'])
+            ->latest()
+            ->limit(10)
+            ->get()
+            ->map(fn ($f) => [
+                'id'             => $f->id,
+                'rating'         => $f->rating,
+                'comment'        => $f->comment,
+                'admin_response' => $f->admin_response,
+                // Privacy: first name + last initial lang
+                'name'           => trim(($f->owner?->first_name ?? 'Pet Owner') . ' ' . substr($f->owner?->last_name ?? '', 0, 1) . '.'),
+                'pet'            => $f->appointment?->pet?->name,
+            ]),
+    ]);
+});
+
 // ════════════════════════════════════════════════════════════════════════════
 // AUTHENTICATED API ROUTES  (Sanctum / session)
 // ════════════════════════════════════════════════════════════════════════════
