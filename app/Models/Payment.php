@@ -100,9 +100,10 @@ class Payment extends Model
     }
 
     public function scopeBetweenDates($query, $from, $to)
-    {
-        return $query->whereBetween('paid_at', [$from, $to]);
-    }
+{
+    return $query->whereDate('paid_at', '>=', $from)
+                 ->whereDate('paid_at', '<=', $to);
+}
 
     // ============================
     // Accessors
