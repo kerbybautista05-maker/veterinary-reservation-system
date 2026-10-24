@@ -10,6 +10,7 @@ interface JsonResponseBody {
     code?: string;
     server_time?: string;
     deep_link?: string; // Add deep_link support
+    [key: string]: unknown; 
 }
 
 export class BaseService {
@@ -179,11 +180,18 @@ export class BaseService {
             }
 
             // Transform response to consistent format
-            const result: ApiResponse<T> = {
-                success: body.success !== undefined ? body.success : true,
-                data: (body.data ?? body) as T,
-                message: body.message ?? 'Success',
-            };
+            const {
+    success: _s, data: _d, message: _m, pagination: _p,
+    errors: _e, code: _c, server_time: _t, deep_link: _dl,
+    ...extra
+} = body;
+
+const result = {
+    ...extra, // dito papasok ang total_revenue at iba pang extra na field
+    success: body.success !== undefined ? body.success : true,
+    data: (body.data ?? body) as T,
+    message: body.message ?? 'Success',
+} as ApiResponse<T>;
 
             // Add pagination if present
             if (body.pagination) {
