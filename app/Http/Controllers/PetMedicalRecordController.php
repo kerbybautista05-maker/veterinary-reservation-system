@@ -197,9 +197,9 @@ return response()->json(['success' => true, 'data' => $pets]);
             $record = PetMedicalRecord::findOrFail($id);
             $user   = $request->user();
 
-            if (!$user->isAdmin() && $record->veterinarian_id !== $user->id && !($user->isPetOwner() && $record->pet->owner_id === $user->id)) {
-                return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
-            }
+            if (!$user->isAdmin() && !$user->isVeterinarian()) {
+    return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+}
 
             $validator = Validator::make($request->all(), [
                 'service_type'    => 'nullable|string|max:150',

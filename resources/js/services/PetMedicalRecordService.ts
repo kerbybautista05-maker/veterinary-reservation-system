@@ -20,7 +20,7 @@ export interface MedicalRecordCreateData {
 }
 
 export interface MedicalRecordUpdateData {
-    service_type?: string;
+    service_type?: string | null;
     visit_date?: string;
     weight_kg?: number;
     temperature_c?: number;
@@ -30,7 +30,7 @@ export interface MedicalRecordUpdateData {
     prescription?: string;
     lab_results?: string;
     notes?: string;
-    follow_up_date?: string;
+    follow_up_date?: string | null;
 }
 
 // ─── Service class ────────────────────────────────────────────────────────────
