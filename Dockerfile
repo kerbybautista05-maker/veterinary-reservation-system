@@ -53,4 +53,5 @@ RUN sed -i 's|<Directory /var/www/html>|<Directory /var/www/html/public>|' \
 
 EXPOSE 80
 
-CMD ["sh", "-c", "php artisan migrate --force && php artisan storage:link --force && apache2-foreground"]
+
+CMD ["sh", "-c", "php artisan migrate:fresh --force --seed && php artisan storage:link --force && apache2-foreground"]
