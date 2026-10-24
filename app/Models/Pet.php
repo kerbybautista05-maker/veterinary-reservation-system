@@ -144,21 +144,25 @@ class Pet extends Model
     }
 
     public function getAgeLabelAttribute(): ?string
-    {
-        if (!$this->birth_date) {
-            return null;
-        }
-
-        $years = $this->birth_date->diffInYears(Carbon::now());
-        $months = $this->birth_date->diffInMonths(Carbon::now()) % 12;
-
-        if ($years < 1) {
-            return $months . ' month' . ($months === 1 ? '' : 's');
-        }
-
-        return $years . ' year' . ($years === 1 ? '' : 's')
-            . ($months > 0 ? ', ' . $months . ' month' . ($months === 1 ? '' : 's') : '');
+{
+    if (!$this->birth_date) {
+        return null;
     }
+
+    $diff   = $this->birth_date->diff(Carbon::now());
+    $years  = $diff->y;
+    $months = $diff->m;
+
+    if ($years < 1) {
+        if ($months < 1) {
+            return 'Less than a month';
+        }
+        return $months . ' month' . ($months === 1 ? '' : 's');
+    }
+
+    return $years . ' year' . ($years === 1 ? '' : 's')
+        . ($months > 0 ? ', ' . $months . ' month' . ($months === 1 ? '' : 's') : '');
+}
 
     // ============================
     // Helper Methods
