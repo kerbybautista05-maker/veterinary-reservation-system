@@ -41,13 +41,50 @@ class AppointmentController extends Controller
             ->exists();
     }
 
-    private function isSlotBooked(string $date, string $time, ?int $excludeId = null): bool
+        private function serviceBase(?string $service): string
     {
-        return Appointment::forDate($date)
-            ->where('appointment_time', $time)
+        return trim(explode(' - ', (string) $service)[0]);
+    }
+
+    private function durationFor(?string $service): ?int
+    {
+        return config('service_durations.durations')[$this->serviceBase($service)] ?? null;
+    }
+
+    private function laneFor(?string $service): string
+    {
+        return in_array($this->serviceBase($service), config('service_durations.groomer_services'), true)
+            ? 'groomer' : 'vet';
+    }
+
+    private function toMinutes(string $time): int
+    {
+        [$h, $m] = array_map('intval', explode(':', $time));
+        return $h * 60 + $m;
+    }
+
+    private function isSlotBooked(string $date, string $time, ?int $excludeId = null, ?string $service = null): bool
+    {
+        $duration = $this->durationFor($service);
+        if ($duration === null) return false;
+
+        $start = $this->toMinutes($time);
+        $end   = $start + $duration;
+        $lane  = $this->laneFor($service);
+
+        $existing = Appointment::forDate($date)
             ->whereIn('status', Appointment::ACTIVE_STATUSES)
             ->when($excludeId, fn ($q) => $q->where('id', '!=', $excludeId))
-            ->exists();
+            ->get();
+
+        foreach ($existing as $a) {
+            $d = $this->durationFor($a->service_type);
+            if ($d === null) continue;
+            if ($this->laneFor($a->service_type) !== $lane) continue;
+            $s = $this->toMinutes((string) $a->appointment_time);
+            if ($start < $s + $d && $s < $end) return true;
+        }
+        return false;
     }
 
     private function isWithinBusinessHours(string $time, string $date = null): bool
@@ -76,9 +113,10 @@ class AppointmentController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'date' => 'required|date|after_or_equal:today',
-                'time' => 'required|date_format:H:i',
-            ]);
+    'date'         => 'required|date|after_or_equal:today',
+    'time'         => 'required|date_format:H:i',
+    'service_type' => 'nullable|string|max:150',
+]);
 
             if ($validator->fails()) {
                 return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
@@ -105,7 +143,7 @@ class AppointmentController extends Controller
                 ]);
             }
 
-            $isBooked = $this->isSlotBooked($date, $time);
+            $isBooked = $this->isSlotBooked($date, $time, null, $request->input('service_type'));
 
             return response()->json([
                 'success' => true,
@@ -363,8 +401,12 @@ class AppointmentController extends Controller
                 }
             }
 
-            if ($this->isSlotBooked($data['appointment_date'], $data['appointment_time'])) {
-                return response()->json(['success' => false, 'message' => 'This time slot is already booked. Please choose another time.'], 422);
+                        if (!$isEmergency && $this->durationFor($data['service_type'] ?? null) === null) {
+                return response()->json(['success' => false, 'message' => 'Please choose a valid service.'], 422);
+            }
+
+            if (!$isEmergency && $this->isSlotBooked($data['appointment_date'], $data['appointment_time'], null, $data['service_type'] ?? null)) {
+                return response()->json(['success' => false, 'message' => 'This time overlaps another appointment for the same service type. Please choose another time.'], 422);
             }
 
             $ownerId = $user->isAdmin() && !empty($data['owner_id']) ? $data['owner_id'] : $user->id;
@@ -384,7 +426,7 @@ class AppointmentController extends Controller
                 'veterinarian_id'   => $data['veterinarian_id'] ?? null,
                 'appointment_date'  => $data['appointment_date'],
                 'appointment_time'  => $data['appointment_time'],
-                'duration_minutes'  => $data['duration_minutes'] ?? 30,
+                'duration_minutes'  => $this->durationFor($data['service_type'] ?? null) ?? 0,
                 'type'              => $data['type'] ?? Appointment::TYPE_REGULAR,
                 'status'            => Appointment::STATUS_PENDING,
                 'service_type'      => $data['service_type'] ?? null,
@@ -463,7 +505,9 @@ class AppointmentController extends Controller
                 'pet_name'          => 'required|string|min:2|max:255',
                 'pet_species'       => 'required|in:Dog,Cat',
                 'pet_breed'         => 'required|string|max:100',
-                'service_type'      => 'required|string|max:150',
+                'service_type'      => ['required', 'string', 'max:150', function ($attr, $value, $fail) {
+    if ($this->durationFor($value) === null) $fail('Invalid service.');
+}],
                 'veterinarian_id'   => 'nullable|exists:users,id',
                 'reason'            => 'nullable|string',
                 'appointment_date'  => 'nullable|date|after_or_equal:today',
@@ -545,7 +589,7 @@ class AppointmentController extends Controller
                 'veterinarian_id'   => $data['veterinarian_id'] ?? null,
                 'appointment_date'  => $apptDate,
                 'appointment_time'  => $apptTime,
-                'duration_minutes'  => 30,
+                'duration_minutes'  => $this->durationFor($data['service_type']) ?? 0,
                 'type'              => $isEmergency ? Appointment::TYPE_EMERGENCY : Appointment::TYPE_REGULAR,
                 'status'            => $apptStatus,
                 'service_type'      => $data['service_type'],
@@ -683,7 +727,7 @@ class AppointmentController extends Controller
                 return response()->json(['success' => false, 'message' => 'Hindi puwedeng mag-book ng appointment sa oras na nakalipas na. Pumili ng ibang oras.'], 422);
             }
 
-            if ($this->isSlotBooked($checkDate, $checkTime, $appointment->id)) {
+            if ($this->isSlotBooked($checkDate, $checkTime, $appointment->id, $data['service_type'] ?? $appointment->service_type)) {
                 return response()->json(['success' => false, 'message' => 'This time slot is already booked. Please choose another time.'], 422);
             }
 
@@ -753,7 +797,7 @@ class AppointmentController extends Controller
                 return response()->json(['success' => false, 'message' => 'Hindi puwedeng mag-book ng appointment sa oras na nakalipas na. Pumili ng ibang oras.'], 422);
             }
 
-            if ($this->isSlotBooked($newDate, $newTime)) {
+            if ($this->isSlotBooked($newDate, $newTime, null, $appointment->service_type)) {
                 return response()->json(['success' => false, 'message' => 'This time slot is already booked. Please choose another time.'], 422);
             }
 
