@@ -57,10 +57,10 @@ export default function VeterinarianCreate() {
                             <div className="grid sm:grid-cols-2 gap-4">
                                 <Field label="First Name" value={form.first_name} onChange={v => setForm(f => ({ ...f, first_name: v }))} error={errors.first_name} />
                                 <Field label="Last Name" value={form.last_name} onChange={v => setForm(f => ({ ...f, last_name: v }))} error={errors.last_name} />
-                                <Field label="Email" type="email" value={form.email} onChange={v => setForm(f => ({ ...f, email: v }))} error={errors.email} />
-                                <Field label="Phone Number" value={form.phone_number} onChange={v => setForm(f => ({ ...f, phone_number: v }))} error={errors.phone_number} />
-                                <Field label="Password" type="password" value={form.password} onChange={v => setForm(f => ({ ...f, password: v }))} error={errors.password} />
-                                <Field label="Confirm Password" type="password" value={form.password_confirmation} onChange={v => setForm(f => ({ ...f, password_confirmation: v }))} />
+                                <Field label="Email" type="email" name="new_vet_email" autoComplete="off" value={form.email} onChange={v => setForm(f => ({ ...f, email: v }))} error={errors.email} />
+<Field label="Phone Number" value={form.phone_number} onChange={v => setForm(f => ({ ...f, phone_number: v }))} error={errors.phone_number} />
+<Field label="Password" type="password" name="new_vet_password" autoComplete="new-password" value={form.password} onChange={v => setForm(f => ({ ...f, password: v }))} error={errors.password} />
+<Field label="Confirm Password" type="password" name="new_vet_password_confirmation" autoComplete="new-password" value={form.password_confirmation} onChange={v => setForm(f => ({ ...f, password_confirmation: v }))} />
                             </div>
                         </div>
 
@@ -106,13 +106,14 @@ export default function VeterinarianCreate() {
     );
 }
 
-function Field({ label, value, onChange, error, type = 'text' }: {
+function Field({ label, value, onChange, error, type = 'text', name, autoComplete }: {
     label: string; value: string; onChange: (v: string) => void; error?: string[]; type?: string;
+    name?: string; autoComplete?: string;
 }) {
     return (
         <div>
             <label className="block text-xs font-bold text-gray-500 mb-1.5">{label}</label>
-            <input type={type} value={value} onChange={e => onChange(e.target.value)}
+            <input type={type} name={name} autoComplete={autoComplete} value={value} onChange={e => onChange(e.target.value)}
                 className={`w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 ${error ? 'border-red-300 focus:ring-red-200' : 'border-gray-200 focus:ring-rose-200 focus:border-rose-300'}`} />
             {error && <p className="text-xs text-red-500 mt-1">{error[0]}</p>}
         </div>
